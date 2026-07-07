@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEC+ SY0-701 | 1.1 Security Controls &amp; Frameworks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --paper:     #111318;
+      --surf:      #181C22;
+      --surf2:     #1F2430;
+      --surf3:     #252C3A;
+      --rule:      #2A3040;
+      --rule2:     #364050;
+      --steel:     #5B8DB8;
+      --steel-lo:  rgba(91,141,184,0.09);
+      --steel-md:  rgba(91,141,184,0.16);
+      --steel-dim: #2B4A68;
+      --steel-hi:  #7AAEE0;
+      --alert:     #B84040;
+      --alert-lo:  rgba(184,64,64,0.09);
+      --alert-dim: #5A1818;
+      --pass:      #3E9A5A;
+      --pass-lo:   rgba(62,154,90,0.08);
+      --pass-dim:  #1A4A28;
+      --gold:      #C8A84B;
+      --gold-lo:   rgba(200,168,75,0.08);
+      --gold-dim:  #6B5820;
+      --cream:     #EDE8E0;
+      --cream-d:   #A8A098;
+      --cream-dd:  #606058;
+      --display:   'Libre Baskerville', serif;
+      --mono:      'Courier Prime', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 16px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(91,141,184,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ── PROGRESS ────────────────────────────────────────────── */
+    .prog-rail { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--rule); z-index: 300; }
+    .prog-fill  { height: 100%; background: var(--steel); transition: width 0.2s; }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 28px 120px; }
+
+    /* ── TOP BANNER ─────────────────────────────────────────── */
+    .top-banner {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      padding: 7px 0; background: var(--steel-dim); margin: 0 -28px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel-hi);
+    }
+
+    /* ── LESSON HEADER ──────────────────────────────────────── */
+    .lesson-header { padding: 52px 0 36px; border-bottom: 1px solid var(--rule2); }
+
+    .breadcrumb {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--cream-dd); margin-bottom: 20px;
+    }
+    .breadcrumb a { color: var(--steel); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--steel-hi); }
+    .breadcrumb span { color: var(--cream-dd); }
+
+    .lesson-eyebrow {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 10px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+    }
+
+    .lesson-title {
+      font-family: var(--display); font-size: clamp(30px, 5vw, 52px);
+      font-weight: 700; line-height: 1.05; color: var(--cream);
+      letter-spacing: -0.02em; margin-bottom: 14px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.2s forwards;
+    }
+    .lesson-title em { font-style: italic; color: var(--steel-hi); }
+
+    .lesson-sub {
+      font-family: var(--display); font-style: italic; font-size: 17px;
+      color: var(--cream-d); max-width: 680px; line-height: 1.7; margin-bottom: 24px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.25s forwards;
+    }
+
+    .badge-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.3s forwards;
+    }
+    .badge {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 12px;
+      border: 1px solid;
+    }
+    .badge-blue   { color: var(--steel-hi);  border-color: var(--steel-dim);  background: var(--steel-lo); }
+    .badge-gold   { color: var(--gold);       border-color: var(--gold-dim);   background: var(--gold-lo); }
+    .badge-red    { color: #E07070;           border-color: var(--alert-dim);  background: var(--alert-lo); }
+    .badge-green  { color: #70C890;           border-color: var(--pass-dim);   background: var(--pass-lo); }
+
+    /* ── SECTION STRUCTURE ──────────────────────────────────── */
+    .section-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel);
+      margin: 52px 0 18px; display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--rule2); }
+
+    h2 {
+      font-family: var(--display); font-size: 22px; font-weight: 700;
+      color: var(--cream); line-height: 1.3; margin: 40px 0 14px;
+      letter-spacing: -0.01em;
+    }
+    h2 .ch-num {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      color: var(--steel-dim); letter-spacing: 0.14em; text-transform: uppercase;
+      display: block; margin-bottom: 4px;
+    }
+
+    h3 {
+      font-family: var(--display); font-size: 17px; font-weight: 700;
+      color: var(--cream-d); margin: 28px 0 10px; letter-spacing: -0.01em;
+    }
+
+    p { color: var(--cream-d); margin-bottom: 16px; font-size: 16px; }
+    p strong { color: var(--cream); font-weight: 700; }
+
+    /* ── INFO CARD ──────────────────────────────────────────── */
+    .info-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel); padding: 18px 22px; margin: 20px 0;
+    }
+    .info-card.warn  { border-left-color: var(--alert); background: var(--alert-lo); }
+    .info-card.pass  { border-left-color: var(--pass);  background: var(--pass-lo);  }
+    .info-card.gold  { border-left-color: var(--gold);  background: var(--gold-lo);  }
+
+    .info-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .info-card       .info-label { color: var(--steel); }
+    .info-card.warn  .info-label { color: #E07070; }
+    .info-card.pass  .info-label { color: #70C890; }
+    .info-card.gold  .info-label { color: var(--gold); }
+
+    .info-card p { margin-bottom: 0; }
+
+    /* ── TABLE ──────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--display); font-size: 14px;
+    }
+    thead tr { background: var(--surf2); border-bottom: 2px solid var(--steel-dim); }
+    thead th {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--steel-hi); padding: 10px 14px; text-align: left;
+    }
+    tbody tr { border-bottom: 1px solid var(--rule); }
+    tbody tr:hover { background: var(--surf); }
+    tbody td { padding: 10px 14px; color: var(--cream-d); vertical-align: top; line-height: 1.6; }
+    tbody td strong { color: var(--cream); }
+    tbody td:first-child { color: var(--cream); font-weight: 700; white-space: nowrap; }
+
+    /* ── CODE BLOCK ─────────────────────────────────────────── */
+    .code-block {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim);
+      font-family: var(--mono); font-size: 13px; color: var(--cream-d);
+      padding: 18px 20px; margin: 20px 0; overflow-x: auto;
+      line-height: 1.7; white-space: pre;
+    }
+    .code-block .c-hl  { color: var(--steel-hi); font-weight: 700; }
+    .code-block .c-key { color: var(--gold); }
+    .code-block .c-val { color: #7EC8A0; }
+    .code-block .c-dim { color: var(--cream-dd); }
+
+    /* ── COMPARISON GRID ────────────────────────────────────── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .compare-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel-dim); padding: 16px 18px;
+    }
+    .compare-card.compare-alt { border-top-color: var(--gold-dim); }
+    .compare-title {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .compare-card       .compare-title { color: var(--steel-hi); }
+    .compare-card.compare-alt .compare-title { color: var(--gold); }
+    .compare-card ul { padding-left: 16px; }
+    .compare-card li  { font-size: 13px; color: var(--cream-d); line-height: 1.7; margin-bottom: 4px; }
+
+    /* ── DEFENSE LAYERS ─────────────────────────────────────── */
+    .layers { display: flex; flex-direction: column; gap: 3px; margin: 20px 0; }
+    .layer-row {
+      display: grid; grid-template-columns: 100px 1fr;
+      background: var(--surf); border: 1px solid var(--rule);
+      overflow: hidden; transition: border-color 0.15s;
+    }
+    .layer-row:hover { border-color: var(--steel-dim); }
+    .layer-num {
+      background: var(--surf2); padding: 10px 14px; text-align: center;
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    }
+    .layer-n { font-size: 18px; color: var(--steel-hi); line-height: 1; }
+    .layer-body { padding: 10px 16px; }
+    .layer-name { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--cream); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px; }
+    .layer-examples { font-size: 13px; color: var(--cream-dd); }
+
+    /* ── Q&A ────────────────────────────────────────────────── */
+    .qa-block { margin: 18px 0; }
+
+    .qa-question {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim); padding: 16px 18px 16px 18px;
+    }
+    .qa-num {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 8px;
+    }
+    .qa-text { font-size: 15px; color: var(--cream); line-height: 1.65; }
+    .qa-scenario {
+      font-family: var(--display); font-style: italic; font-size: 14px;
+      color: var(--cream-dd); border-left: 2px solid var(--rule2);
+      padding-left: 12px; margin-bottom: 10px; line-height: 1.6;
+    }
+
+    .qa-reveal {
+      background: transparent; border: none; border-top: 1px solid var(--rule);
+      width: 100%; padding: 10px 18px; text-align: left; cursor: pointer;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel-dim);
+      display: flex; align-items: center; gap: 8px; transition: color 0.15s, background 0.15s;
+    }
+    .qa-reveal:hover { background: var(--steel-lo); color: var(--steel-hi); }
+    .qa-reveal .arrow { transition: transform 0.2s; font-size: 12px; }
+    .qa-reveal.open   { color: var(--steel-hi); }
+    .qa-reveal.open .arrow { transform: rotate(90deg); }
+
+    .qa-answer {
+      display: none; background: var(--surf2); border: 1px solid var(--rule2);
+      border-top: none; padding: 16px 18px;
+    }
+    .qa-answer.show { display: block; animation: fadeUp 0.25s ease forwards; }
+    .qa-answer p { font-size: 14px; margin-bottom: 10px; }
+    .qa-answer p:last-child { margin-bottom: 0; }
+    .qa-answer strong { color: var(--steel-hi); }
+    .qa-answer .answer-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--pass);
+      margin-bottom: 8px;
+    }
+
+    /* ── RESOURCES ──────────────────────────────────────────── */
+    .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 16px 0; }
+    .resource-card {
+      background: var(--surf); border: 1px solid var(--rule2); padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .resource-name { font-family: var(--display); font-size: 14px; font-weight: 700; color: var(--cream); }
+    .resource-use  { font-family: var(--display); font-style: italic; font-size: 12px; color: var(--cream-dd); }
+    .resource-tag  { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--steel); text-transform: uppercase; margin-top: 4px; }
+
+    /* ── NEXT STEPS ─────────────────────────────────────────── */
+    .next-block {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel); padding: 22px 24px; margin-top: 40px;
+    }
+    .next-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--steel); margin-bottom: 14px; }
+    .next-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .next-item  {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+      color: var(--cream-dd); line-height: 1.5;
+    }
+    .next-cmd   { color: var(--steel-hi); font-weight: 700; white-space: nowrap; }
+
+    /* ── MENU ───────────────────────────────────────────────── */
+    .cmd-menu {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      padding: 16px 20px; margin-top: 20px;
+      font-family: var(--mono); font-size: 11px;
+    }
+    .cmd-menu-label { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cream-dd); margin-bottom: 10px; }
+    .cmd-row { display: flex; gap: 8px; align-items: baseline; margin: 5px 0; }
+    .cmd     { color: var(--steel-hi); font-weight: 700; min-width: 88px; }
+    .cmd-desc { color: var(--cream-dd); font-size: 10px; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    .lesson-footer {
+      margin-top: 60px; padding: 18px 0 0; border-top: 1px solid var(--rule2);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--cream-dd); text-transform: uppercase; }
+    .footer-id span { color: var(--steel-hi); }
+    .footer-hub {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--cream-dd); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-hub:hover { color: var(--steel-hi); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 640px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .next-grid    { grid-template-columns: 1fr; }
+      .layer-row    { grid-template-columns: 70px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="prog-rail"><div class="prog-fill" id="progFill"></div></div>
+
+<div class="top-banner">Security+ SY0-701 &mdash; Week 1 &mdash; Domain 1.0 &mdash; Lesson 1.1</div>
+
+<div class="page">
+
+  <!-- ── HEADER ───────────────────────────────────────────────── -->
+  <header class="lesson-header">
+    <div class="breadcrumb">
+      <a href="security-plus-hub.html">Security+ Hub</a>
+      <span> / Domain 1.0 / Lesson 1.1</span>
+    </div>
+    <div class="lesson-eyebrow">Chapter 1.1 &mdash; Domain 1.0: General Security Concepts</div>
+    <h1 class="lesson-title">Security Controls<br><em>&amp; Control Frameworks</em></h1>
+    <p class="lesson-sub">The taxonomy the exam uses to classify every security control. Most candidates memorize the definitions. The exam tests whether you can apply both dimensions simultaneously under scenario pressure.</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">Lesson 1.1</span>
+      <span class="badge badge-gold">Domain 1.0 &mdash; 12%</span>
+      <span class="badge badge-red">14 Days to Exam</span>
+      <span class="badge badge-green">Est. 90 min</span>
+    </div>
+  </header>
+
+  <!-- ── OVERVIEW ─────────────────────────────────────────────── -->
+  <div class="section-label">Overview</div>
+
+  <div class="info-card gold">
+    <div class="info-label">Why This Lesson Matters</div>
+    <p>Control classification questions appear 4 to 6 times per exam in scenario format. The exam does not ask "what is a firewall." It asks "a firewall placed at the network perimeter to block unauthorized traffic is an example of which control category and which control type?" Most candidates answer one half correctly. You need to answer both.</p>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">What Carries Over From Network+</div>
+    <p>CIA triad, AAA frameworks, firewall types, IPSec AH vs ESP, VPN types, DAI, DHCP Snooping. Do not re-study these. This lesson builds the layer above your existing knowledge.</p>
+  </div>
+
+  <!-- ── CHAPTER 1: CONTROL CATEGORIES ────────────────────────── -->
+  <h2><span class="ch-num">Chapter 01</span>Control Categories</h2>
+
+  <p>A <strong>control category</strong> describes what a control does in relation to a threat or security event. There are five categories on SY0-701.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Definition</th>
+          <th>Triggers When</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Preventive</strong></td>
+          <td>Stops an event before it occurs</td>
+          <td>A login lockout policy blocks a brute-force attempt</td>
+        </tr>
+        <tr>
+          <td><strong>Detective</strong></td>
+          <td>Identifies that an event has occurred or is in progress</td>
+          <td>A SIEM alert fires on 50 failed logins in 60 seconds</td>
+        </tr>
+        <tr>
+          <td><strong>Corrective</strong></td>
+          <td>Reduces the impact of an event that has already occurred</td>
+          <td>A backup is restored after ransomware encrypts a server</td>
+        </tr>
+        <tr>
+          <td><strong>Deterrent</strong></td>
+          <td>Discourages an attacker from attempting an action</td>
+          <td>A login-page warning banner states that monitoring is active</td>
+        </tr>
+        <tr>
+          <td><strong>Compensating</strong></td>
+          <td>An alternative used when the primary control cannot be applied</td>
+          <td>Network segmentation applied to a legacy device that cannot be patched</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Critical Distinction: Deterrent vs. Preventive</div>
+    <p>A deterrent does not stop an attack. It discourages one. A "No Trespassing" sign is a deterrent. A locked gate is preventive. If the attacker ignores the sign and walks through an unlocked gate, the deterrent failed. The sign was never the mechanism, only the message.</p>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Critical Distinction: Corrective vs. Detective</div>
+    <p>A corrective control acts after an incident. A detective control identifies an incident. An IDS is detective. Restoring from backup is corrective. They are not interchangeable and the exam will test your ability to separate them from a scenario.</p>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Critical Distinction: Compensating vs. Corrective</div>
+    <p>Compensating controls are applied in advance when a preferred preventive control is unavailable. No incident has occurred. Corrective controls respond to an event that has already happened. The timing is what separates them.</p>
+  </div>
+
+  <!-- ── CHAPTER 2: CONTROL TYPES ──────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 02</span>Control Types</h2>
+
+  <p>A <strong>control type</strong> describes what form the control takes. Every control has both a category and a type simultaneously.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Definition</th>
+          <th>Real-World Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Technical</strong></td>
+          <td>Implemented through technology</td>
+          <td>Firewalls, encryption, MFA, antivirus, ACLs</td>
+        </tr>
+        <tr>
+          <td><strong>Managerial</strong></td>
+          <td>Policies, procedures, and governance requirements</td>
+          <td>Acceptable use policy, mandatory risk assessments</td>
+        </tr>
+        <tr>
+          <td><strong>Operational</strong></td>
+          <td>Carried out by people executing processes</td>
+          <td>Security guard patrols, manual log reviews, change management approvals</td>
+        </tr>
+        <tr>
+          <td><strong>Physical</strong></td>
+          <td>Controls the physical environment</td>
+          <td>Keycard access, CCTV cameras, biometric door locks, cable locks</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Common Exam Trap: Managerial vs. Operational</div>
+    <p>Security awareness training is <strong>managerial</strong>. It is a policy-driven requirement documented in a standard. A security guard walking the floor is <strong>operational</strong>. A person executing a physical process. The exam will swap these in scenarios. Read whether the control is a written requirement or a human action.</p>
+  </div>
+
+  <!-- ── CHAPTER 3: BOTH DIMENSIONS ────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 03</span>Applying Both Dimensions</h2>
+
+  <p>This is what the exam tests. Work through every row before moving on. Cover the Category and Type columns first, then check your answer.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Control</th>
+          <th>Category</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Firewall blocking inbound traffic</td><td>Preventive</td><td>Technical</td></tr>
+        <tr><td>Security camera recording a loading dock</td><td>Detective</td><td>Physical</td></tr>
+        <tr><td>Acceptable use policy</td><td>Preventive</td><td>Managerial</td></tr>
+        <tr><td>Backup restoration after ransomware</td><td>Corrective</td><td>Technical</td></tr>
+        <tr><td>Warning banner on the login page</td><td>Deterrent</td><td>Technical</td></tr>
+        <tr><td>Security guard at the server room door</td><td>Deterrent</td><td>Physical</td></tr>
+        <tr><td>Network segmentation for a legacy system</td><td>Compensating</td><td>Technical</td></tr>
+        <tr><td>Mandatory security awareness training</td><td>Preventive</td><td>Managerial</td></tr>
+        <tr><td>Manual log review by a SOC analyst</td><td>Detective</td><td>Operational</td></tr>
+        <tr><td>Biometric lock on the data center entrance</td><td>Preventive</td><td>Physical</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── CHAPTER 4: ZERO TRUST ─────────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 04</span>Zero Trust vs. Perimeter Security</h2>
+
+  <div class="compare-grid">
+    <div class="compare-card compare-alt">
+      <div class="compare-title">Perimeter Security (Traditional)</div>
+      <ul>
+        <li>Firewall separates trusted inside from untrusted outside</li>
+        <li>Users inside the network are implicitly trusted</li>
+        <li>Lateral movement is unrestricted once perimeter is breached</li>
+        <li>Fails completely against stolen credentials or insider threats</li>
+        <li>SolarWinds breach is the canonical example of perimeter failure</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <div class="compare-title">Zero Trust Model</div>
+      <ul>
+        <li>No implicit trust based on network location</li>
+        <li>Every access request is verified explicitly</li>
+        <li>Least privilege: minimum access required for the task</li>
+        <li>Assume breach: design as if the attacker is already inside</li>
+        <li>Microsegmentation limits blast radius when breach occurs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="c-hl">Zero Trust Core Principles</span>
+
+<span class="c-key">1. Verify Explicitly</span>
+   <span class="c-val">Authenticate and authorize every request every time.</span>
+   <span class="c-dim">Use identity, device health, location, and behavior as signals.</span>
+
+<span class="c-key">2. Least Privilege Access</span>
+   <span class="c-val">Grant only the minimum access required for the task.</span>
+   <span class="c-dim">Use just-in-time (JIT) elevation for any privileged action.</span>
+
+<span class="c-key">3. Assume Breach</span>
+   <span class="c-val">Segment everything. Monitor everything. Minimize blast radius.</span>
+   <span class="c-dim">Design for containment, not just prevention.</span></div>
+
+  <div class="info-card">
+    <div class="info-label">Exam Tip: Zero Trust is Not a Product</div>
+    <p>A vendor selling a "zero trust firewall" is selling a firewall with a marketing label. Zero trust is a design philosophy applied through identity controls, microsegmentation, and continuous verification. When a scenario describes per-request verification, JIT access elevation, or continuous authentication, it is describing a zero trust principle.</p>
+  </div>
+
+  <!-- ── CHAPTER 5: DEFENSE IN DEPTH ───────────────────────────── -->
+  <h2><span class="ch-num">Chapter 05</span>Defense in Depth</h2>
+
+  <p>Defense in depth layers multiple controls across multiple categories and types so that failure of one control does not cause a complete breach.</p>
+
+  <div class="layers">
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">7</span>Identity</div>
+      <div class="layer-body">
+        <div class="layer-name">Identity</div>
+        <div class="layer-examples">MFA, PAM, RBAC, least privilege, JIT access elevation</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">6</span>Data</div>
+      <div class="layer-body">
+        <div class="layer-name">Data</div>
+        <div class="layer-examples">Encryption at rest and in transit, DLP, data classification</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">5</span>App</div>
+      <div class="layer-body">
+        <div class="layer-name">Application</div>
+        <div class="layer-examples">WAF, input validation, secure coding standards, SAST/DAST</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">4</span>Endpoint</div>
+      <div class="layer-body">
+        <div class="layer-name">Endpoint</div>
+        <div class="layer-examples">EDR, host-based firewall, patch management, application allowlisting</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">3</span>Network</div>
+      <div class="layer-body">
+        <div class="layer-name">Network</div>
+        <div class="layer-examples">VLANs, microsegmentation, IPS, network access control (NAC)</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">2</span>Perimeter</div>
+      <div class="layer-body">
+        <div class="layer-name">Perimeter</div>
+        <div class="layer-examples">Firewall, IPS, DMZ design, email filtering, web proxy</div>
+      </div>
+    </div>
+    <div class="layer-row">
+      <div class="layer-num"><span class="layer-n">1</span>Physical</div>
+      <div class="layer-body">
+        <div class="layer-name">Physical</div>
+        <div class="layer-examples">Locked data center, biometrics, CCTV, cable locks, security guards</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">Exam Tip</div>
+    <p>When a scenario asks why a control was placed "in addition to" an existing control, the answer is almost always defense in depth. One layer catches what another misses.</p>
+  </div>
+
+  <!-- ── Q&A ───────────────────────────────────────────────────── -->
+  <div class="section-label">Q &amp; A</div>
+
+  <p>Attempt every answer before revealing. Write your answer out. Do not read ahead.</p>
+
+  <!-- Q1 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 01 of 04</div>
+      <p class="qa-text">A company installs a security camera at the entrance to its server room. The camera records all entry attempts but does not trigger alerts or lock the door. What is the control category and control type?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Category: Detective.</strong> The camera records events. It identifies that entry occurred. It does not prevent or deter entry on its own.</p>
+      <p><strong>Type: Physical.</strong> It is a physical device operating in the physical environment.</p>
+      <p>If the camera triggered an audible alarm when motion was detected after hours, the alarm component would be classified as deterrent. The camera's recording function remains detective.</p>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 02 of 04</div>
+      <p class="qa-scenario">A hospital cannot patch a critical vulnerability in a legacy infusion pump. The vendor no longer supports the device and patching would violate FDA compliance. The security team places the pump on an isolated VLAN with no outbound internet access and restricts all communication to the nurse station application only.</p>
+      <p class="qa-text">What control category applies? Why is this not a corrective control?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Category: Compensating.</strong> The primary control (patching the vulnerability) cannot be applied. Network segmentation and communication restriction substitute for the preferred control by reducing exposure when the preferred control is unavailable.</p>
+      <p>It is not corrective because no incident has occurred. Corrective controls respond to events that have already happened. Compensating controls are applied in advance when a preferred preventive control cannot be used.</p>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 03 of 04</div>
+      <p class="qa-text">An organization's security policy requires all new employees to complete security awareness training within 30 days of hire. The training covers phishing identification, password policy, and acceptable use. What category and type is this control? Is it preventive or detective? Explain your reasoning.</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Category: Preventive.</strong> The goal is to reduce the likelihood of a security incident by changing employee behavior before an incident happens.</p>
+      <p><strong>Type: Managerial.</strong> It is a policy-driven requirement, not a technology, not a physical device, and not a manual operational process.</p>
+      <p>It is not detective because it does not identify events that have already occurred. It is not operational because it is a documented policy mandate rather than a person physically executing a process. A security guard conducting a floor walkthrough is operational. A training requirement in a written policy is managerial.</p>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 04 of 04</div>
+      <p class="qa-scenario">An attacker steals credentials via phishing, logs in to the VPN from a foreign IP address, and begins moving laterally through the internal network. A SIEM geographic anomaly rule generates an alert 4 hours after the initial login.</p>
+      <p class="qa-text">Name the control that failed and its category and type. Name the control that eventually worked and its category and type. What zero trust principle would have limited the damage regardless of whether the attacker got in?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Control that failed:</strong> MFA on VPN login. Category: Preventive. Type: Technical. If MFA had been enforced, the stolen credential alone would not have granted access.</p>
+      <p><strong>Control that worked:</strong> SIEM geographic anomaly rule. Category: Detective. Type: Technical. It identified the unusual event 4 hours late, but it eventually fired.</p>
+      <p><strong>Zero trust principle:</strong> Assume Breach combined with Least Privilege. If the attacker is already inside, microsegmentation limits lateral movement to the immediate segment. Least privilege ensures the compromised account cannot reach systems outside its assigned scope. JIT access would have required an additional approval step before any elevated action could proceed.</p>
+    </div>
+  </div>
+
+  <!-- ── RESOURCES ─────────────────────────────────────────────── -->
+  <div class="section-label">Additional Resources</div>
+
+  <div class="resources-grid">
+    <div class="resource-card">
+      <div class="resource-name">Professor Messer SY0-701 — Domain 1 Videos</div>
+      <div class="resource-use">Visual walkthrough of control categories and types. 15 minutes total.</div>
+      <div class="resource-tag">Free &mdash; professormesser.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">CompTIA SY0-701 Exam Objectives PDF</div>
+      <div class="resource-use">Official objective list. Verify you are studying the correct material.</div>
+      <div class="resource-tag">Free &mdash; comptia.org</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">ExamCompass SY0-701 Domain 1 Practice Set</div>
+      <div class="resource-use">10-question drills on control classification. Immediate feedback.</div>
+      <div class="resource-tag">Free &mdash; examcompass.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">Mike Chapple: CompTIA Security+ Study Guide</div>
+      <div class="resource-use">Chapter 1. Deeper reading if any section above requires more context.</div>
+      <div class="resource-tag">Paid &mdash; Chapple is an exam author</div>
+    </div>
+  </div>
+
+  <!-- ── WHAT COMES NEXT ───────────────────────────────────────── -->
+  <div class="next-block">
+    <div class="next-label">What Comes Next</div>
+    <p style="color:var(--cream-d);font-size:14px;margin-bottom:14px;">Day 1 continues with Chapter 1.2 (Cryptography Foundations). Day 2 begins Domain 2.0 with threat actor taxonomy.</p>
+    <div class="next-grid">
+      <div class="next-item"><span class="next-cmd">/lesson</span><span>Next: Chapter 1.2 — Cryptography Foundations</span></div>
+      <div class="next-item"><span class="next-cmd">/project</span><span>Build a control classification drill lab tied to this lesson</span></div>
+      <div class="next-item"><span class="next-cmd">/explain</span><span>Deep dive on any concept above</span></div>
+      <div class="next-item"><span class="next-cmd">/save</span><span>You are already reading the saved version</span></div>
+    </div>
+  </div>
+
+  <!-- ── MENU ─────────────────────────────────────────────────── -->
+  <div class="cmd-menu">
+    <div class="cmd-menu-label">Command Menu</div>
+    <div class="cmd-row"><span class="cmd">/learn</span><span class="cmd-desc">Topic overview and full study plan</span></div>
+    <div class="cmd-row"><span class="cmd">/lesson</span><span class="cmd-desc">Next lesson: Chapter 1.2 Cryptography Foundations</span></div>
+    <div class="cmd-row"><span class="cmd">/project</span><span class="cmd-desc">Build a lab tied to this lesson</span></div>
+    <div class="cmd-row"><span class="cmd">/explain</span><span class="cmd-desc">Deep dive on any concept</span></div>
+    <div class="cmd-row"><span class="cmd">/save</span><span class="cmd-desc">Export last response as styled HTML</span></div>
+    <div class="cmd-row"><span class="cmd">/next</span><span class="cmd-desc">I determine and start the next logical step</span></div>
+  </div>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────── -->
+  <footer class="lesson-footer">
+    <div class="footer-id">Security+ SY0-701 &nbsp;/&nbsp; <span>Lesson 1.1</span> &nbsp;/&nbsp; Domain 1.0 &nbsp;/&nbsp; Week 1</div>
+    <a href="security-plus-hub.html" class="footer-hub">&larr; Back to Hub</a>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  // ── REVEAL TOGGLE ────────────────────────────────────────────
+  function toggleQA(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = answer.classList.contains('show');
+    answer.classList.toggle('show', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    btn.querySelector('.arrow').textContent = isOpen ? '\u25BA' : '\u25BC';
+  }
+
+  // ── SCROLL PROGRESS ─────────────────────────────────────────
+  window.addEventListener('scroll', () => {
+    const total  = document.documentElement.scrollHeight - window.innerHeight;
+    const pct    = total > 0 ? (window.scrollY / total) * 100 : 0;
+    document.getElementById('progFill').style.width = pct + '%';
+  });
+</script>
+</body>
+</html>

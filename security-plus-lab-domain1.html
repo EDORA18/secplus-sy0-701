@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEC+ SY0-701 | Domain 1 Mastery Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --void:     #08090C;
+      --paper:    #0E1015;
+      --surf:     #151921;
+      --surf2:    #1D2330;
+      --surf3:    #252D3E;
+      --rule:     #2A3040;
+      --rule2:    #364050;
+
+      --steel:    #5B8DB8;
+      --steel-lo: rgba(91,141,184,0.09);
+      --steel-md: rgba(91,141,184,0.16);
+      --steel-dim:#2B4A68;
+      --steel-hi: #7AAEE0;
+
+      --alert:    #B84040;
+      --alert-lo: rgba(184,64,64,0.09);
+      --alert-md: rgba(184,64,64,0.14);
+      --alert-dim:#5A1818;
+
+      --pass:     #3E9A5A;
+      --pass-lo:  rgba(62,154,90,0.09);
+      --pass-md:  rgba(62,154,90,0.15);
+      --pass-dim: #1A4A28;
+      --pass-hi:  #70C890;
+
+      --gold:     #C8A84B;
+      --gold-lo:  rgba(200,168,75,0.08);
+      --gold-dim: #6B5820;
+
+      --cream:    #EDE8E0;
+      --cream-d:  #A8A098;
+      --cream-dd: #606058;
+
+      --display:  'Libre Baskerville', serif;
+      --mono:     'Courier Prime', monospace;
+      --term:     'Share Tech Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Terminal-style scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(91,141,184,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: linear-gradient(rgba(91,141,184,0.015) 50%, transparent 50%);
+      background-size: 100% 3px;
+    }
+
+    /* ── PROGRESS BAR ─────────────────────────────── */
+    .prog { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--rule); z-index: 300; }
+    .prog-fill { height: 100%; width: 0%; background: var(--steel); transition: width 0.3s; }
+
+    /* ── LAYOUT ───────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
+
+    /* ── HEADER BANNER ────────────────────────────── */
+    .top-banner {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      padding: 7px 0; background: var(--steel-dim); margin: 0 -24px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel-hi);
+    }
+
+    .lab-header { padding: 44px 0 32px; border-bottom: 1px solid var(--rule2); }
+    .breadcrumb {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--cream-dd); margin-bottom: 18px;
+    }
+    .breadcrumb a { color: var(--steel); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--steel-hi); }
+    .breadcrumb span { color: var(--cream-dd); }
+
+    .lab-eyebrow {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--steel); margin-bottom: 10px;
+    }
+    .lab-title {
+      font-family: var(--display); font-size: clamp(32px, 5.4vw, 56px);
+      font-weight: 700; line-height: 1.02; color: var(--cream);
+      letter-spacing: -0.02em; margin-bottom: 14px;
+    }
+    .lab-title em { font-style: italic; color: var(--steel-hi); }
+    .lab-sub {
+      font-family: var(--display); font-style: italic; font-size: 16px;
+      color: var(--cream-d); max-width: 680px; line-height: 1.7; margin-bottom: 22px;
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 12px;
+      border: 1px solid;
+    }
+    .badge-blue  { color: var(--steel-hi); border-color: var(--steel-dim); background: var(--steel-lo); }
+    .badge-gold  { color: var(--gold);      border-color: var(--gold-dim);  background: var(--gold-lo); }
+    .badge-red   { color: #E07070;          border-color: var(--alert-dim); background: var(--alert-lo); }
+    .badge-green { color: var(--pass-hi);   border-color: var(--pass-dim);  background: var(--pass-lo); }
+
+    /* ── CONTROL BAR (timer + buttons) ─────────────── */
+    .control-bar {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center;
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel); padding: 16px 20px; margin: 28px 0 20px;
+    }
+    .timer-block { display: flex; flex-direction: column; gap: 2px; min-width: 140px; }
+    .timer-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel); }
+    .timer-value {
+      font-family: var(--term); font-size: 34px; font-weight: 400; color: var(--steel-hi);
+      letter-spacing: -0.01em; line-height: 1; text-shadow: 0 0 16px rgba(91,141,184,0.3);
+    }
+    .timer-value.critical { color: var(--alert); text-shadow: 0 0 20px rgba(184,64,64,0.4); animation: pulse 1s infinite; }
+
+    .score-strip { display: flex; gap: 24px; justify-content: center; }
+    .score-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .score-lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream-dd); }
+    .score-val { font-family: var(--term); font-size: 22px; font-weight: 400; color: var(--cream); line-height: 1; }
+    .score-val.good { color: var(--pass-hi); }
+    .score-val.bad  { color: var(--alert); }
+
+    .action-buttons { display: flex; gap: 8px; }
+    .btn {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 8px 14px; border: 1px solid; background: transparent; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn-primary { color: var(--steel-hi); border-color: var(--steel-dim); background: var(--steel-lo); }
+    .btn-primary:hover { background: var(--steel-md); }
+    .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-sec { color: var(--cream-dd); border-color: var(--rule2); }
+    .btn-sec:hover { color: var(--cream); border-color: var(--cream-dd); }
+    .btn-danger { color: #E07070; border-color: var(--alert-dim); }
+    .btn-danger:hover { background: var(--alert-lo); }
+
+    /* ── MODULE TABS ──────────────────────────────── */
+    .module-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0 0 24px; }
+    .mod-tab {
+      background: var(--surf2); border: 1px solid var(--rule2); padding: 14px 16px;
+      cursor: pointer; text-align: left; position: relative; transition: border-color 0.2s, background 0.2s;
+    }
+    .mod-tab:hover { border-color: var(--steel-dim); }
+    .mod-tab.active { border-color: var(--steel); background: var(--steel-lo); }
+    .mod-tab.locked { opacity: 0.4; cursor: not-allowed; }
+    .mod-tab.complete { border-color: var(--pass-dim); background: var(--pass-lo); }
+
+    .mod-num { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.18em; color: var(--steel); text-transform: uppercase; margin-bottom: 4px; }
+    .mod-tab.complete .mod-num { color: var(--pass-hi); }
+    .mod-title { font-family: var(--display); font-weight: 700; font-size: 14px; color: var(--cream); margin-bottom: 4px; letter-spacing: -0.01em; }
+    .mod-meta { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--cream-dd); text-transform: uppercase; }
+    .mod-status {
+      position: absolute; top: 10px; right: 12px;
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+    .mod-tab.locked .mod-status { color: var(--alert); }
+    .mod-tab.complete .mod-status { color: var(--pass-hi); }
+    .mod-tab.active:not(.complete) .mod-status { color: var(--steel-hi); }
+
+    /* ── QUESTION AREA ────────────────────────────── */
+    .question-panel {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel); padding: 24px 28px; margin-bottom: 20px;
+    }
+    .q-meta {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream-dd);
+    }
+    .q-num { color: var(--steel); font-weight: 700; }
+    .q-scenario {
+      font-family: var(--display); font-style: italic; font-size: 15px; color: var(--cream-dd);
+      border-left: 2px solid var(--rule2); padding-left: 14px; margin-bottom: 14px; line-height: 1.65;
+    }
+    .q-text {
+      font-family: var(--display); font-size: 17px; color: var(--cream); line-height: 1.55; margin-bottom: 20px;
+    }
+
+    /* Module 1: dual-select category + type */
+    .dual-select { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .ds-group { }
+    .ds-label { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.18em; color: var(--steel-hi); text-transform: uppercase; margin-bottom: 8px; }
+    .ds-options { display: flex; flex-direction: column; gap: 4px; }
+    .ds-option {
+      background: var(--surf2); border: 1px solid var(--rule2); padding: 10px 14px;
+      cursor: pointer; text-align: left; font-family: var(--display); font-size: 14px; color: var(--cream-d);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .ds-option:hover { border-color: var(--steel-dim); color: var(--cream); }
+    .ds-option.selected { border-color: var(--steel); background: var(--steel-lo); color: var(--steel-hi); }
+    .ds-option.correct  { border-color: var(--pass); background: var(--pass-md); color: var(--pass-hi); }
+    .ds-option.wrong    { border-color: var(--alert); background: var(--alert-md); color: #E07070; }
+
+    /* Module 2 & 3: single-select multiple choice */
+    .mc-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .mc-option {
+      background: var(--surf2); border: 1px solid var(--rule2); padding: 12px 16px;
+      cursor: pointer; text-align: left; font-family: var(--display); font-size: 15px; color: var(--cream-d);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .mc-option:hover { border-color: var(--steel-dim); color: var(--cream); }
+    .mc-option.selected { border-color: var(--steel); background: var(--steel-lo); color: var(--steel-hi); }
+    .mc-option.correct { border-color: var(--pass); background: var(--pass-md); color: var(--pass-hi); }
+    .mc-option.wrong   { border-color: var(--alert); background: var(--alert-md); color: #E07070; }
+    .mc-letter {
+      font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--steel); min-width: 20px;
+    }
+    .mc-option.correct .mc-letter { color: var(--pass-hi); }
+    .mc-option.wrong   .mc-letter { color: #E07070; }
+
+    /* Submit / Reveal */
+    .q-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+    /* Explanation panel */
+    .explain-panel {
+      display: none; margin-top: 16px; padding: 16px 18px;
+      background: var(--surf2); border: 1px solid var(--rule2); border-left: 3px solid var(--gold);
+      font-size: 14px; line-height: 1.7; color: var(--cream-d);
+    }
+    .explain-panel.show { display: block; animation: fadeIn 0.25s ease; }
+    .explain-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+    }
+    .explain-verdict {
+      display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 10px; margin-bottom: 10px;
+    }
+    .explain-verdict.correct { background: var(--pass-lo); color: var(--pass-hi); border: 1px solid var(--pass-dim); }
+    .explain-verdict.wrong   { background: var(--alert-lo); color: #E07070; border: 1px solid var(--alert-dim); }
+
+    /* Nav row */
+    .q-nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+    .q-nav-info { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--cream-dd); text-transform: uppercase; }
+
+    /* ── PROGRESS INDICATORS ──────────────────────── */
+    .module-progress {
+      display: flex; gap: 3px; margin: 12px 0 20px;
+    }
+    .mp-cell {
+      flex: 1; height: 6px; background: var(--surf2); border: 1px solid var(--rule);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .mp-cell.answered { background: var(--steel-dim); border-color: var(--steel-dim); }
+    .mp-cell.correct  { background: var(--pass);       border-color: var(--pass); }
+    .mp-cell.wrong    { background: var(--alert);      border-color: var(--alert); }
+
+    /* ── START SCREEN ─────────────────────────────── */
+    .start-screen {
+      background: var(--surf); border: 1px solid var(--rule2); border-left: 3px solid var(--steel);
+      padding: 40px 44px; text-align: center; margin: 20px 0;
+    }
+    .start-title {
+      font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--cream);
+      letter-spacing: -0.01em; margin-bottom: 12px;
+    }
+    .start-desc { color: var(--cream-d); max-width: 560px; margin: 0 auto 24px; line-height: 1.7; font-size: 15px; }
+    .start-rules {
+      background: var(--surf2); border: 1px solid var(--rule); padding: 18px 22px; margin: 0 auto 28px;
+      max-width: 620px; text-align: left;
+    }
+    .start-rules ul { list-style: none; padding: 0; }
+    .start-rules li {
+      font-family: var(--mono); font-size: 12px; color: var(--cream-d);
+      padding: 4px 0; letter-spacing: 0.02em; line-height: 1.6;
+    }
+    .start-rules li::before { content: '> '; color: var(--steel); font-weight: 700; }
+    .btn-start {
+      font-family: var(--mono); font-size: 13px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 14px 32px; border: 2px solid var(--steel);
+      background: var(--steel-lo); color: var(--steel-hi); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-start:hover { background: var(--steel-md); }
+
+    /* ── RESULTS PANEL ────────────────────────────── */
+    .results-panel {
+      display: none; background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 4px solid var(--steel); padding: 32px 36px; margin: 30px 0;
+    }
+    .results-panel.show { display: block; animation: fadeIn 0.4s ease; }
+    .results-title {
+      font-family: var(--display); font-size: 32px; font-weight: 700; color: var(--cream);
+      letter-spacing: -0.01em; margin-bottom: 6px;
+    }
+    .results-sub {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--steel); margin-bottom: 26px;
+    }
+
+    .results-ring-wrap { display: flex; align-items: center; gap: 32px; margin-bottom: 30px; flex-wrap: wrap; }
+    .results-ring { position: relative; width: 160px; height: 160px; }
+    .results-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: var(--rule2); stroke-width: 10; }
+    .ring-fg { fill: none; stroke: var(--steel-hi); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+    .ring-pct {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-family: var(--term); font-size: 44px; color: var(--steel-hi);
+    }
+
+    .results-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--rule2); border: 1px solid var(--rule2); }
+    .rg-cell { background: var(--surf2); padding: 14px 16px; }
+    .rg-lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cream-dd); margin-bottom: 4px; }
+    .rg-val { font-family: var(--term); font-size: 24px; color: var(--cream); line-height: 1.1; }
+    .rg-val.good { color: var(--pass-hi); }
+    .rg-val.bad  { color: var(--alert); }
+
+    .mod-scores { margin: 20px 0; }
+    .mod-score-row { display: grid; grid-template-columns: 200px 1fr 80px; gap: 12px; align-items: center; padding: 8px 0; }
+    .msr-lbl { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-d); }
+    .msr-bar-wrap { height: 8px; background: var(--surf2); border: 1px solid var(--rule); overflow: hidden; }
+    .msr-bar { height: 100%; background: var(--steel); transition: width 1s ease; }
+    .msr-bar.good { background: var(--pass); }
+    .msr-bar.bad  { background: var(--alert); }
+    .msr-val { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--cream); text-align: right; }
+
+    .verdict-box {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      padding: 18px 22px; margin: 20px 0;
+      font-family: var(--display); font-size: 15px; line-height: 1.7; color: var(--cream-d);
+    }
+    .verdict-box.pass { border-left: 3px solid var(--pass); }
+    .verdict-box.fail { border-left: 3px solid var(--alert); }
+    .verdict-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .verdict-box.pass .verdict-label { color: var(--pass-hi); }
+    .verdict-box.fail .verdict-label { color: var(--alert); }
+
+    .results-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
+    /* ── FOOTER ───────────────────────────────────── */
+    .lab-footer {
+      margin-top: 40px; padding: 18px 0 0; border-top: 1px solid var(--rule2);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--cream-dd); text-transform: uppercase; }
+    .footer-id span { color: var(--steel-hi); }
+    .footer-hub {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--cream-dd); text-decoration: none;
+    }
+    .footer-hub:hover { color: var(--steel-hi); }
+
+    /* ── ANIMATIONS ───────────────────────────────── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    @media (max-width: 700px) {
+      .control-bar { grid-template-columns: 1fr; }
+      .score-strip { justify-content: space-between; }
+      .module-tabs { grid-template-columns: 1fr; }
+      .dual-select { grid-template-columns: 1fr; }
+      .mod-score-row { grid-template-columns: 1fr; }
+      .msr-val { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="prog"><div class="prog-fill" id="progFill"></div></div>
+
+<div class="page">
+
+  <div class="top-banner">Security+ SY0-701 &mdash; Domain 1 &mdash; Mastery Lab</div>
+
+  <header class="lab-header">
+    <div class="breadcrumb">
+      <a href="security-plus-hub.html">Security+ Hub</a>
+      <span> / Domain 1.0 / Mastery Lab</span>
+    </div>
+    <div class="lab-eyebrow">Domain 1.0 &mdash; Controls, Cryptography, PKI</div>
+    <h1 class="lab-title">Domain 1<br><em>Mastery Lab</em></h1>
+    <p class="lab-sub">30 questions across 3 gated modules. 45-minute timer. Live scoring with explanations. Pass mark: 80%. Anything below 80% means you return to lessons 1.1, 1.2, or 1.3 before continuing.</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">30 Questions</span>
+      <span class="badge badge-gold">3 Modules</span>
+      <span class="badge badge-red">45 Min Timer</span>
+      <span class="badge badge-green">Pass: 80%</span>
+    </div>
+  </header>
+
+  <!-- START SCREEN -->
+  <div class="start-screen" id="startScreen">
+    <div class="start-title">Ready to begin?</div>
+    <p class="start-desc">This lab tests your full Domain 1.0 coverage. Once you press start, the timer runs. You cannot pause. Progress saves automatically to your browser.</p>
+    <div class="start-rules">
+      <ul>
+        <li>Module 1: 10 questions on control category + type. Both must match.</li>
+        <li>Module 2: 10 questions on cryptography algorithm selection.</li>
+        <li>Module 3: 10 questions on PKI diagnosis and certificate errors.</li>
+        <li>Modules are gated. Complete each before the next unlocks.</li>
+        <li>Timer: 45 minutes for the full lab.</li>
+        <li>After each answer, explanations reveal. Read them.</li>
+        <li>Progress saves in localStorage. Close and resume any time.</li>
+      </ul>
+    </div>
+    <button class="btn-start" onclick="startLab()">Begin Lab</button>
+  </div>
+
+  <!-- CONTROL BAR (hidden until start) -->
+  <div class="control-bar" id="controlBar" style="display:none;">
+    <div class="timer-block">
+      <div class="timer-label">Time Remaining</div>
+      <div class="timer-value" id="timerValue">45:00</div>
+    </div>
+    <div class="score-strip">
+      <div class="score-cell"><span class="score-lbl">Correct</span><span class="score-val good" id="scCorrect">0</span></div>
+      <div class="score-cell"><span class="score-lbl">Wrong</span><span class="score-val bad" id="scWrong">0</span></div>
+      <div class="score-cell"><span class="score-lbl">Remaining</span><span class="score-val" id="scRemaining">30</span></div>
+      <div class="score-cell"><span class="score-lbl">Score</span><span class="score-val" id="scPct">--</span></div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn btn-sec" onclick="exportResults()">Export</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Reset</button>
+    </div>
+  </div>
+
+  <!-- MODULE TABS -->
+  <div class="module-tabs" id="moduleTabs" style="display:none;">
+    <div class="mod-tab active" id="tab-m1" onclick="switchModule('m1')">
+      <div class="mod-num">Module 01</div>
+      <div class="mod-title">Control Classification</div>
+      <div class="mod-meta">10 Questions &middot; Category + Type</div>
+      <div class="mod-status" id="status-m1">Active</div>
+    </div>
+    <div class="mod-tab locked" id="tab-m2" onclick="switchModule('m2')">
+      <div class="mod-num">Module 02</div>
+      <div class="mod-title">Cryptography Selector</div>
+      <div class="mod-meta">10 Questions &middot; Algorithm Choice</div>
+      <div class="mod-status" id="status-m2">Locked</div>
+    </div>
+    <div class="mod-tab locked" id="tab-m3" onclick="switchModule('m3')">
+      <div class="mod-num">Module 03</div>
+      <div class="mod-title">PKI Diagnosis</div>
+      <div class="mod-meta">10 Questions &middot; Cert Errors</div>
+      <div class="mod-status" id="status-m3">Locked</div>
+    </div>
+  </div>
+
+  <div class="module-progress" id="modProgress" style="display:none;"></div>
+
+  <!-- QUESTION PANEL -->
+  <div class="question-panel" id="questionPanel" style="display:none;">
+    <div class="q-meta">
+      <span class="q-num" id="qNum">Q 01 / 10</span>
+      <span id="qModuleLabel">Module 01 &mdash; Control Classification</span>
+    </div>
+    <div class="q-scenario" id="qScenario" style="display:none;"></div>
+    <div class="q-text" id="qText"></div>
+    <div id="qAnswerArea"></div>
+    <div class="q-actions">
+      <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Submit Answer</button>
+      <button class="btn btn-sec" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next Question &rsaquo;</button>
+    </div>
+    <div class="explain-panel" id="explainPanel">
+      <div class="explain-verdict" id="explainVerdict"></div>
+      <div class="explain-label">Explanation</div>
+      <div id="explainText"></div>
+    </div>
+  </div>
+
+  <div class="q-nav" id="qNav" style="display:none;">
+    <span class="q-nav-info">Progress saves automatically</span>
+    <span class="q-nav-info" id="qNavCount"></span>
+  </div>
+
+  <!-- RESULTS PANEL -->
+  <div class="results-panel" id="resultsPanel">
+    <div class="results-title">Lab Complete</div>
+    <div class="results-sub" id="resultsSub">30 / 30 Questions Answered</div>
+
+    <div class="results-ring-wrap">
+      <div class="results-ring">
+        <svg viewBox="0 0 100 100">
+          <circle class="ring-bg" cx="50" cy="50" r="42"/>
+          <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="42" stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+        </svg>
+        <div class="ring-pct" id="ringPct">0%</div>
+      </div>
+      <div class="results-grid">
+        <div class="rg-cell"><div class="rg-lbl">Correct</div><div class="rg-val good" id="rCorrect">0</div></div>
+        <div class="rg-cell"><div class="rg-lbl">Wrong</div><div class="rg-val bad" id="rWrong">0</div></div>
+        <div class="rg-cell"><div class="rg-lbl">Time Used</div><div class="rg-val" id="rTime">--</div></div>
+        <div class="rg-cell"><div class="rg-lbl">Pass Mark</div><div class="rg-val">80%</div></div>
+      </div>
+    </div>
+
+    <div class="mod-scores" id="modScores"></div>
+
+    <div class="verdict-box" id="verdictBox">
+      <div class="verdict-label" id="verdictLabel">Verdict</div>
+      <div id="verdictText"></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn btn-primary" onclick="exportResults()">Export Results</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Reset Lab</button>
+      <a class="btn btn-sec" href="security-plus-hub.html" style="text-decoration:none;display:inline-block;">Back to Hub</a>
+    </div>
+  </div>
+
+  <footer class="lab-footer">
+    <div class="footer-id">Security+ SY0-701 &nbsp;/&nbsp; <span>Domain 1 Mastery Lab</span> &nbsp;/&nbsp; Week 1</div>
+    <a href="security-plus-hub.html" class="footer-hub">&larr; Back to Hub</a>
+  </footer>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// QUESTION DATA
+// ═══════════════════════════════════════════════════════════════
+
+const MODULES = {
+  m1: {
+    title: 'Control Classification',
+    label: 'Module 01: Control Classification',
+    type: 'dual',
+    catOptions:  ['Preventive','Detective','Corrective','Deterrent','Compensating'],
+    typeOptions: ['Technical','Managerial','Operational','Physical'],
+    questions: [
+      { id:'m1q1',  text:'A firewall blocks inbound traffic on port 445 from external networks.',
+        category:'Preventive', typeAnswer:'Technical',
+        explain:'The firewall stops the event (unauthorized inbound traffic) before it can reach internal systems, making it preventive. It is implemented in technology (a firewall device or software), making it technical.' },
+      { id:'m1q2',  text:'A security camera records all activity in the loading dock after business hours. It has no motion alerts.',
+        category:'Detective', typeAnswer:'Physical',
+        explain:'The camera identifies (records) events that occur. It does not stop or deter them because it has no alerting or visible warning. It is a physical device in the physical environment.' },
+      { id:'m1q3',  text:'A company policy mandates that all new employees complete phishing awareness training within 30 days of hire.',
+        category:'Preventive', typeAnswer:'Managerial',
+        explain:'The goal is to reduce the likelihood of a phishing incident before it happens (preventive). It is a policy-driven documented requirement, not a technology or physical control, making it managerial.' },
+      { id:'m1q4',  text:'A SOC analyst reviews yesterday\u2019s authentication logs looking for unusual login patterns.',
+        category:'Detective', typeAnswer:'Operational',
+        explain:'The analyst is identifying events that have already occurred, making this detective. A person executing a process defines the operational type.' },
+      { id:'m1q5',  text:'A ransomware attack encrypts a file server. The IT team restores the affected files from the previous night\u2019s backup.',
+        category:'Corrective', typeAnswer:'Technical',
+        explain:'The event has already occurred. The action reduces impact by restoring data, making this corrective. The restoration mechanism is technology (backup software and infrastructure), making it technical.' },
+      { id:'m1q6',  text:'A warning banner on the VPN login page states: "All activity is logged and monitored. Unauthorized access is prohibited."',
+        category:'Deterrent', typeAnswer:'Technical',
+        explain:'The banner does not stop access on its own. It discourages attackers by signaling monitoring. That is a deterrent. It is delivered by technology (the login page), making it technical.' },
+      { id:'m1q7',  text:'A hospital cannot patch a legacy infusion pump. The security team isolates the pump on a VLAN with no internet access and restricts communication to the nurse station application only.',
+        category:'Compensating', typeAnswer:'Technical',
+        explain:'The primary control (patching) cannot be applied. Segmentation substitutes for the preferred control, making it compensating. The substitute is implemented in technology (VLAN and ACLs), making it technical.' },
+      { id:'m1q8',  text:'A biometric fingerprint reader controls access to the data center door.',
+        category:'Preventive', typeAnswer:'Physical',
+        explain:'The reader prevents unauthorized entry before it happens (preventive). It is a physical device controlling the physical environment (a door), making it physical.' },
+      { id:'m1q9',  text:'A change management approval process requires manager sign-off before any production deployment.',
+        category:'Preventive', typeAnswer:'Operational',
+        explain:'The process reduces the likelihood of a bad deployment before it happens (preventive). It is a repeatable process executed by people (the approver reviews and signs off), making it operational.' },
+      { id:'m1q10', text:'An external audit firm reviews the company\u2019s access control logs quarterly, mandated by corporate policy.',
+        category:'Detective', typeAnswer:'Managerial',
+        explain:'The audit identifies past events and control failures, making it detective. It is a policy-mandated requirement (the audit exists because policy requires it), making it managerial. Note: the audit itself has operational aspects, but classification follows what defines the control, which here is the policy mandate.' },
+    ],
+  },
+  m2: {
+    title: 'Cryptography Selector',
+    label: 'Module 02: Cryptography Selector',
+    type: 'single',
+    questions: [
+      { id:'m2q1', text:'You are configuring full-disk encryption for a corporate laptop fleet. Which symmetric algorithm and key size do you select?',
+        options:['AES-256','3DES','RC4','DES'], answer:0,
+        explain:'AES-256 is the current standard for symmetric encryption. 3DES was deprecated by NIST effective January 1, 2024. RC4 and DES are broken.' },
+      { id:'m2q2', text:'An IoT sensor network needs to negotiate session keys with a central gateway. The sensors have limited CPU, memory, and battery. Which key exchange algorithm is best suited?',
+        options:['RSA-4096','ECDHE','Diffie-Hellman 2048','MD5'], answer:1,
+        explain:'ECDHE provides equivalent security to large RSA keys at 256 bits. It also delivers Perfect Forward Secrecy. Small keys mean less CPU, less memory, less battery. RSA-4096 is expensive on constrained devices. MD5 is a hash, not key exchange.' },
+      { id:'m2q3', text:'A modern web application needs to store user passwords. Which approach is correct?',
+        options:['SHA-256 hash of the password','AES-256 encryption with a server-side key','bcrypt with per-user salt','MD5 with a shared pepper'], answer:2,
+        explain:'Passwords are stored as slow-hashed digests, not encrypted (encryption implies you need to decrypt back). Fast hashes like SHA-256 or MD5 are unsuitable. bcrypt is a slow hash designed for password storage. Argon2, PBKDF2, and scrypt are also acceptable.' },
+      { id:'m2q4', text:'You need a hash algorithm to verify the integrity of a downloaded ISO image. Which is appropriate?',
+        options:['MD5','SHA-1','SHA-256','HMAC-MD5'], answer:2,
+        explain:'SHA-256 is the current standard. MD5 was broken by collision attacks in 2004. SHA-1 was broken by the SHAttered attack in 2017. HMAC requires a shared key, which is unnecessary for public integrity verification of a downloaded file.' },
+      { id:'m2q5', text:'Which symmetric cipher was officially deprecated by NIST effective January 1, 2024?',
+        options:['AES','3DES','ChaCha20','SHA-256'], answer:1,
+        explain:'NIST SP 800-131A designated 3DES as disallowed after December 31, 2023. AES and ChaCha20 remain current standards. SHA-256 is a hash, not a symmetric cipher.' },
+      { id:'m2q6', text:'TLS 1.3 uses which authenticated encryption mode by default?',
+        options:['AES-ECB','AES-CBC','AES-GCM','AES-OFB'], answer:2,
+        explain:'AES-GCM provides authenticated encryption (AEAD): confidentiality, integrity, and authenticity in one operation. ECB is insecure because identical plaintext blocks produce identical ciphertext. CBC provides confidentiality only. TLS 1.3 also supports ChaCha20-Poly1305.' },
+      { id:'m2q7', text:'You need a digital signature algorithm that uses elliptic curves. Which do you select?',
+        options:['RSA','ECDSA','ECDH','DHE'], answer:1,
+        explain:'ECDSA is the Elliptic Curve Digital Signature Algorithm. RSA can sign but does not use elliptic curves. ECDH and DHE are key exchange algorithms, not signature algorithms.' },
+      { id:'m2q8', text:'A security team wants their TLS connections to remain protected in the past even if the server\u2019s long-term private key is later compromised. Which property must they enable?',
+        options:['Perfect Forward Secrecy','Non-repudiation','Key escrow','Certificate pinning'], answer:0,
+        explain:'PFS uses ephemeral key exchange (ECDHE or DHE) to generate a fresh session key for every connection. If the long-term key is compromised later, past captured sessions cannot be decrypted because their session keys were derived from ephemeral material that no longer exists.' },
+      { id:'m2q9', text:'Which stream cipher was used in WEP and older TLS versions, and is now broken?',
+        options:['AES','ChaCha20','RC4','Twofish'], answer:2,
+        explain:'RC4 was used in WEP and older versions of TLS. Multiple attacks have demonstrated its weakness. It should not appear in any current design. ChaCha20 is a modern stream cipher used in TLS 1.3.' },
+      { id:'m2q10', text:'A developer proposes storing password hashes using SHA-256 with no salt for speed. Why is this proposal wrong?',
+        options:['SHA-256 is too slow for passwords','SHA-256 is deprecated','SHA-256 is too fast, and no salt allows rainbow tables','SHA-256 is not a real algorithm'], answer:2,
+        explain:'SHA-256 is designed to be fast for file integrity checks. For password storage you want slow hashing (bcrypt, Argon2, PBKDF2, scrypt) combined with per-user salt. Without salt, identical passwords produce identical hashes, enabling rainbow table lookups.' },
+    ],
+  },
+  m3: {
+    title: 'PKI Diagnosis',
+    label: 'Module 03: PKI Diagnosis',
+    type: 'single',
+    questions: [
+      { id:'m3q1', scenario:'A user visits an internal HTTPS site from their corporate laptop with no warning. The same URL loaded from their personal laptop shows "This connection is not secure." The certificate is identical in both cases.',
+        text:'What is the technical cause?',
+        options:['Certificate has expired','Certificate uses a private CA root not in the personal device\u2019s trust store','Wildcard mismatch','Weak cipher suite'], answer:1,
+        explain:'The corporate laptop has the private CA root installed via GPO or MDM. The personal laptop does not. Chain validation fails on the personal laptop because it cannot walk up to a trusted root.' },
+      { id:'m3q2', scenario:'A developer purchases a wildcard cert for *.example.com and applies it to mail.example.com, api.example.com, and example.com (the apex). Users get errors only when visiting example.com directly.',
+        text:'Why?',
+        options:['Wildcard cert covers subdomains but does not cover the apex','Certificate has expired','DNS is misconfigured','Browser cache issue'], answer:0,
+        explain:'A wildcard replaces one label at the leftmost position. *.example.com matches mail.example.com and api.example.com but not example.com itself. Fix: use a SAN cert listing both the wildcard and the apex.' },
+      { id:'m3q3', scenario:'A TLS handshake fails after a server-side update. The server now sends only its leaf certificate. Some older browsers connected fine, but current versions of Chrome fail.',
+        text:'What is the cause?',
+        options:['TLS version mismatch','Missing intermediate certificate','Expired root CA','OCSP stapling disabled'], answer:1,
+        explain:'The server must send the intermediate certificate(s) along with the leaf so the browser can build the chain to a trusted root. Older browsers sometimes cached intermediates from previous connections. Current Chrome does not.' },
+      { id:'m3q4', text:'A browser rejects a certificate with the error "signature algorithm too weak." What is the most likely cause?',
+        options:['Certificate was signed with SHA-1 or MD5','Certificate was signed with SHA-256','Public key is too small','Wrong signature algorithm field format'], answer:0,
+        explain:'Modern browsers reject certificates signed with SHA-1 (Chrome since 2017) or MD5. The Signature Algorithm field in the certificate identifies which was used to sign the certificate.' },
+      { id:'m3q5', scenario:'An e-commerce site\u2019s CTO raises a privacy concern in a board meeting: their current OCSP configuration exposes every user\u2019s browsing pattern to the CA.',
+        text:'Which technology addresses this without abandoning real-time revocation checking?',
+        options:['OCSP Stapling','Certificate pinning','CRL only','Certificate transparency'], answer:0,
+        explain:'With OCSP stapling, the server itself queries the OCSP responder and staples the signed response into the TLS handshake. Clients get revocation status from the server, not the CA. The CA never sees individual user queries.' },
+      { id:'m3q6', scenario:'A code-signing private key was accidentally committed to a public GitHub repository. Four hours have passed since the commit.',
+        text:'What is the first technical action?',
+        options:['Rotate the corresponding public key','Revoke the certificate through the issuing CA','Delete the repository','Notify all end users'], answer:1,
+        explain:'Immediate revocation updates the CRL and OCSP responder, marking the certificate as compromised. Deleting the repo does not help because the key has already been scraped. Public keys are not rotated independently of certificate revocation.' },
+      { id:'m3q7', text:'A browser rejects a certificate because the domain appears in the Common Name field but not in the Subject Alternative Name field. Why does this fail on modern browsers?',
+        options:['SAN is optional and CN is preferred','CN alone has been deprecated for TLS server certificates since Chrome 58 in 2017','CN and SAN must always match','Certificate is self-signed'], answer:1,
+        explain:'Modern browsers require the SAN extension for TLS server certificates. The CN field is retained for backward compatibility but is no longer used for hostname matching.' },
+      { id:'m3q8', scenario:'A company wants to issue TLS certificates to hundreds of internal servers, RDP endpoints, and 802.1X client devices without paying a public CA for each certificate.',
+        text:'What is the correct solution?',
+        options:['Self-signed certificates on each server','Deploy a Private (internal) CA and distribute its root via GPO or MDM','Use expired public certificates','Skip TLS on internal servers'], answer:1,
+        explain:'Private CAs scale to thousands of certificates. Self-signed certificates do not scale because each device would need to be individually trusted on every client. Skipping TLS violates baseline security policy.' },
+      { id:'m3q9', scenario:'A financial institution has a compliance requirement: signed transaction records must remain verifiable years after the signer\u2019s certificate has expired.',
+        text:'What must be added at the time of signing?',
+        options:['Certificate pinning on the signing device','A timestamp from a trusted timestamping authority (TSA)','A longer key size','More frequent OCSP checks'], answer:1,
+        explain:'A timestamp signed by a trusted TSA proves the signature existed at the time of signing. Even if the signer\u2019s certificate later expires or is revoked, the timestamp proves the signature was valid when created. Without timestamping, expired certs invalidate old signatures.' },
+      { id:'m3q10', text:'A user reports a certificate error. The dates are valid, the algorithm is SHA-256, and the CA is trusted. The specific error is "hostname mismatch."',
+        options:['The certificate\u2019s SAN field does not include the requested hostname','Certificate is revoked','TLS version is too old','OCSP responder is offline'], answer:0,
+        explain:'Even with a valid chain, valid dates, and a strong algorithm, the browser must verify that the requested hostname matches an entry in the certificate\u2019s SAN field. If not, hostname mismatch is the exact error.' },
+    ],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE + STORAGE
+// ═══════════════════════════════════════════════════════════════
+
+const LS_KEY = 'sp701_lab_domain1_v1';
+const TIMER_TOTAL = 45 * 60; // 45 min
+
+let state = {
+  started:      false,
+  finished:     false,
+  currentMod:   'm1',
+  qIdx:         { m1: 0, m2: 0, m3: 0 },
+  answers:      {},       // { m1q1: { correct: true, selected: [...] }, ... }
+  timeUsed:     0,
+  startedAt:    null,
+};
+
+let selectedCategory = null;
+let selectedType     = null;
+let selectedOption   = null;
+let submitted        = false;
+let timerId          = null;
+
+function lsGet() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || null; } catch { return null; }
+}
+function lsSet() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch {}
+}
+function lsClear() {
+  try { localStorage.removeItem(LS_KEY); } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = lsGet();
+  if (saved && saved.started && !saved.finished) {
+    state = saved;
+    resumeLab();
+  } else if (saved && saved.finished) {
+    state = saved;
+    showResults();
+  }
+});
+
+function startLab() {
+  state.started   = true;
+  state.startedAt = Date.now();
+  state.currentMod = 'm1';
+  lsSet();
+
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('controlBar').style.display  = 'grid';
+  document.getElementById('moduleTabs').style.display  = 'grid';
+  document.getElementById('modProgress').style.display = 'flex';
+  document.getElementById('questionPanel').style.display = 'block';
+  document.getElementById('qNav').style.display = 'flex';
+
+  startTimer();
+  renderModuleTabs();
+  renderProgress();
+  renderQuestion();
+}
+
+function resumeLab() {
+  document.getElementById('startScreen').style.display = 'none';
+  document.getElementById('controlBar').style.display  = 'grid';
+  document.getElementById('moduleTabs').style.display  = 'grid';
+  document.getElementById('modProgress').style.display = 'flex';
+  document.getElementById('questionPanel').style.display = 'block';
+  document.getElementById('qNav').style.display = 'flex';
+
+  startTimer();
+  updateScoreStrip();
+  renderModuleTabs();
+  renderProgress();
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════════
+
+function startTimer() {
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(() => {
+    state.timeUsed = Math.floor((Date.now() - state.startedAt) / 1000);
+    if (state.timeUsed >= TIMER_TOTAL) {
+      finishLab(true);
+      return;
+    }
+    updateTimer();
+    if (state.timeUsed % 5 === 0) lsSet();
+  }, 1000);
+  updateTimer();
+}
+
+function updateTimer() {
+  const remaining = Math.max(0, TIMER_TOTAL - state.timeUsed);
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const el = document.getElementById('timerValue');
+  el.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+  if (remaining <= 300) el.classList.add('critical'); else el.classList.remove('critical');
+
+  const pct = (state.timeUsed / TIMER_TOTAL) * 100;
+  document.getElementById('progFill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MODULE TABS
+// ═══════════════════════════════════════════════════════════════
+
+function renderModuleTabs() {
+  ['m1','m2','m3'].forEach(mid => {
+    const tab = document.getElementById('tab-' + mid);
+    const stat = document.getElementById('status-' + mid);
+    tab.classList.remove('active','locked','complete');
+
+    const modAnswered = MODULES[mid].questions.filter(q => state.answers[q.id]).length;
+    const modTotal    = MODULES[mid].questions.length;
+
+    if (modAnswered === modTotal) {
+      tab.classList.add('complete');
+      stat.textContent = 'Complete';
+    } else if (!isModuleUnlocked(mid)) {
+      tab.classList.add('locked');
+      stat.textContent = 'Locked';
+    } else if (mid === state.currentMod) {
+      tab.classList.add('active');
+      stat.textContent = 'Active';
+    } else {
+      stat.textContent = 'Ready';
+    }
+  });
+}
+
+function isModuleUnlocked(mid) {
+  if (mid === 'm1') return true;
+  if (mid === 'm2') return MODULES.m1.questions.every(q => state.answers[q.id]);
+  if (mid === 'm3') return MODULES.m1.questions.every(q => state.answers[q.id])
+                      && MODULES.m2.questions.every(q => state.answers[q.id]);
+  return false;
+}
+
+function switchModule(mid) {
+  if (!isModuleUnlocked(mid)) return;
+  state.currentMod = mid;
+  submitted = false;
+  selectedCategory = selectedType = selectedOption = null;
+  lsSet();
+  renderModuleTabs();
+  renderProgress();
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════════════════════════
+
+function renderProgress() {
+  const mod = MODULES[state.currentMod];
+  const el = document.getElementById('modProgress');
+  el.innerHTML = '';
+  mod.questions.forEach(q => {
+    const cell = document.createElement('div');
+    cell.className = 'mp-cell';
+    const ans = state.answers[q.id];
+    if (ans) {
+      cell.classList.add(ans.correct ? 'correct' : 'wrong');
+    }
+    el.appendChild(cell);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUESTION RENDERING
+// ═══════════════════════════════════════════════════════════════
+
+function renderQuestion() {
+  const mid = state.currentMod;
+  const mod = MODULES[mid];
+  const idx = state.qIdx[mid];
+  const q   = mod.questions[idx];
+
+  submitted = false;
+  selectedCategory = selectedType = selectedOption = null;
+
+  document.getElementById('qModuleLabel').textContent = mod.label;
+  document.getElementById('qNum').textContent = 'Q ' + String(idx + 1).padStart(2,'0') + ' / ' + mod.questions.length;
+
+  const scenarioEl = document.getElementById('qScenario');
+  if (q.scenario) {
+    scenarioEl.textContent = q.scenario;
+    scenarioEl.style.display = 'block';
+  } else {
+    scenarioEl.style.display = 'none';
+  }
+
+  document.getElementById('qText').textContent = q.text;
+
+  const area = document.getElementById('qAnswerArea');
+  area.innerHTML = '';
+
+  if (mod.type === 'dual') {
+    // Module 1: category + type
+    const wrap = document.createElement('div');
+    wrap.className = 'dual-select';
+
+    const catGroup = document.createElement('div');
+    catGroup.className = 'ds-group';
+    catGroup.innerHTML = '<div class="ds-label">Control Category</div>';
+    const catOpts = document.createElement('div'); catOpts.className = 'ds-options';
+    mod.catOptions.forEach(opt => {
+      const b = document.createElement('button');
+      b.className = 'ds-option'; b.textContent = opt;
+      b.onclick = () => selectDual('cat', opt, catOpts);
+      catOpts.appendChild(b);
+    });
+    catGroup.appendChild(catOpts);
+    wrap.appendChild(catGroup);
+
+    const typeGroup = document.createElement('div');
+    typeGroup.className = 'ds-group';
+    typeGroup.innerHTML = '<div class="ds-label">Control Type</div>';
+    const typeOpts = document.createElement('div'); typeOpts.className = 'ds-options';
+    mod.typeOptions.forEach(opt => {
+      const b = document.createElement('button');
+      b.className = 'ds-option'; b.textContent = opt;
+      b.onclick = () => selectDual('type', opt, typeOpts);
+      typeOpts.appendChild(b);
+    });
+    typeGroup.appendChild(typeOpts);
+    wrap.appendChild(typeGroup);
+
+    area.appendChild(wrap);
+  } else {
+    // Modules 2 & 3: single select
+    const opts = document.createElement('div'); opts.className = 'mc-options';
+    q.options.forEach((opt, i) => {
+      const b = document.createElement('button');
+      b.className = 'mc-option';
+      b.innerHTML = '<span class="mc-letter">' + String.fromCharCode(65 + i) + '.</span><span>' + opt + '</span>';
+      b.onclick = () => selectMC(i, opts);
+      opts.appendChild(b);
+    });
+    area.appendChild(opts);
+  }
+
+  document.getElementById('submitBtn').style.display = 'inline-block';
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('explainPanel').classList.remove('show');
+
+  document.getElementById('qNavCount').textContent = 'Question ' + (idx + 1) + ' of ' + mod.questions.length;
+
+  // If already answered, show it
+  if (state.answers[q.id]) {
+    showPreviousAnswer(q);
+  }
+}
+
+function selectDual(kind, value, groupEl) {
+  if (submitted) return;
+  groupEl.querySelectorAll('.ds-option').forEach(o => o.classList.remove('selected'));
+  Array.from(groupEl.children).find(o => o.textContent === value).classList.add('selected');
+  if (kind === 'cat') selectedCategory = value; else selectedType = value;
+  document.getElementById('submitBtn').disabled = !(selectedCategory && selectedType);
+}
+
+function selectMC(idx, groupEl) {
+  if (submitted) return;
+  groupEl.querySelectorAll('.mc-option').forEach(o => o.classList.remove('selected'));
+  groupEl.children[idx].classList.add('selected');
+  selectedOption = idx;
+  document.getElementById('submitBtn').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMIT
+// ═══════════════════════════════════════════════════════════════
+
+function submitAnswer() {
+  const mid = state.currentMod;
+  const mod = MODULES[mid];
+  const idx = state.qIdx[mid];
+  const q   = mod.questions[idx];
+
+  submitted = true;
+  let correct = false;
+  const area = document.getElementById('qAnswerArea');
+
+  if (mod.type === 'dual') {
+    correct = (selectedCategory === q.category) && (selectedType === q.typeAnswer);
+
+    // Highlight correct/wrong on both groups
+    const groups = area.querySelectorAll('.ds-options');
+    groups[0].querySelectorAll('.ds-option').forEach(o => {
+      if (o.textContent === q.category) o.classList.add('correct');
+      else if (o.textContent === selectedCategory && selectedCategory !== q.category) o.classList.add('wrong');
+    });
+    groups[1].querySelectorAll('.ds-option').forEach(o => {
+      if (o.textContent === q.typeAnswer) o.classList.add('correct');
+      else if (o.textContent === selectedType && selectedType !== q.typeAnswer) o.classList.add('wrong');
+    });
+
+    state.answers[q.id] = { correct, selected: { cat: selectedCategory, type: selectedType } };
+  } else {
+    correct = (selectedOption === q.answer);
+    const opts = area.querySelectorAll('.mc-option');
+    opts.forEach((o, i) => {
+      if (i === q.answer) o.classList.add('correct');
+      else if (i === selectedOption && !correct) o.classList.add('wrong');
+    });
+    state.answers[q.id] = { correct, selected: selectedOption };
+  }
+
+  // Explanation
+  const panel = document.getElementById('explainPanel');
+  const verdict = document.getElementById('explainVerdict');
+  verdict.textContent = correct ? '✓ Correct' : '✗ Incorrect';
+  verdict.className = 'explain-verdict ' + (correct ? 'correct' : 'wrong');
+  let expText = q.explain;
+  if (!correct && mod.type === 'dual') {
+    expText = 'Correct answer: ' + q.category + ' + ' + q.typeAnswer + '\n\n' + expText;
+  } else if (!correct && mod.type === 'single') {
+    expText = 'Correct answer: ' + String.fromCharCode(65 + q.answer) + '. ' + q.options[q.answer] + '\n\n' + expText;
+  }
+  document.getElementById('explainText').innerHTML = expText.replace(/\n/g,'<br>');
+  panel.classList.add('show');
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+
+  renderProgress();
+  updateScoreStrip();
+  lsSet();
+}
+
+function showPreviousAnswer(q) {
+  const mid = state.currentMod;
+  const mod = MODULES[mid];
+  const ans = state.answers[q.id];
+  submitted = true;
+  const area = document.getElementById('qAnswerArea');
+
+  if (mod.type === 'dual') {
+    const groups = area.querySelectorAll('.ds-options');
+    groups[0].querySelectorAll('.ds-option').forEach(o => {
+      if (o.textContent === q.category) o.classList.add('correct');
+      else if (o.textContent === ans.selected.cat && ans.selected.cat !== q.category) o.classList.add('wrong');
+    });
+    groups[1].querySelectorAll('.ds-option').forEach(o => {
+      if (o.textContent === q.typeAnswer) o.classList.add('correct');
+      else if (o.textContent === ans.selected.type && ans.selected.type !== q.typeAnswer) o.classList.add('wrong');
+    });
+  } else {
+    const opts = area.querySelectorAll('.mc-option');
+    opts.forEach((o, i) => {
+      if (i === q.answer) o.classList.add('correct');
+      else if (i === ans.selected && !ans.correct) o.classList.add('wrong');
+    });
+  }
+
+  const verdict = document.getElementById('explainVerdict');
+  verdict.textContent = ans.correct ? '✓ Correct' : '✗ Incorrect';
+  verdict.className = 'explain-verdict ' + (ans.correct ? 'correct' : 'wrong');
+  let expText = q.explain;
+  if (!ans.correct && mod.type === 'dual') expText = 'Correct answer: ' + q.category + ' + ' + q.typeAnswer + '\n\n' + expText;
+  else if (!ans.correct && mod.type === 'single') expText = 'Correct answer: ' + String.fromCharCode(65 + q.answer) + '. ' + q.options[q.answer] + '\n\n' + expText;
+  document.getElementById('explainText').innerHTML = expText.replace(/\n/g,'<br>');
+  document.getElementById('explainPanel').classList.add('show');
+
+  document.getElementById('submitBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-block';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NEXT QUESTION / MODULE
+// ═══════════════════════════════════════════════════════════════
+
+function nextQuestion() {
+  const mid = state.currentMod;
+  const mod = MODULES[mid];
+  const idx = state.qIdx[mid];
+
+  if (idx < mod.questions.length - 1) {
+    state.qIdx[mid] = idx + 1;
+    lsSet();
+    renderProgress();
+    renderQuestion();
+  } else {
+    // Module complete. Advance if possible.
+    if (mid === 'm1' && isModuleUnlocked('m2')) switchModule('m2');
+    else if (mid === 'm2' && isModuleUnlocked('m3')) switchModule('m3');
+    else if (mid === 'm3') finishLab(false);
+    else renderModuleTabs();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCORE STRIP
+// ═══════════════════════════════════════════════════════════════
+
+function updateScoreStrip() {
+  const answered = Object.keys(state.answers).length;
+  const correct = Object.values(state.answers).filter(a => a.correct).length;
+  const wrong   = answered - correct;
+  const remaining = 30 - answered;
+  const pct = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+
+  document.getElementById('scCorrect').textContent = correct;
+  document.getElementById('scWrong').textContent   = wrong;
+  document.getElementById('scRemaining').textContent = remaining;
+  document.getElementById('scPct').textContent = answered > 0 ? (pct + '%') : '--';
+  document.getElementById('scPct').className = 'score-val ' + (pct >= 80 ? 'good' : (pct < 60 ? 'bad' : ''));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FINISH + RESULTS
+// ═══════════════════════════════════════════════════════════════
+
+function finishLab(timeExpired) {
+  state.finished = true;
+  if (timerId) { clearInterval(timerId); timerId = null; }
+  lsSet();
+  showResults(timeExpired);
+}
+
+function showResults(timeExpired) {
+  document.getElementById('questionPanel').style.display = 'none';
+  document.getElementById('qNav').style.display = 'none';
+  document.getElementById('moduleTabs').style.display = 'none';
+  document.getElementById('modProgress').style.display = 'none';
+  document.getElementById('controlBar').style.display = 'none';
+
+  const panel = document.getElementById('resultsPanel');
+  panel.classList.add('show');
+
+  const answered = Object.keys(state.answers).length;
+  const correct = Object.values(state.answers).filter(a => a.correct).length;
+  const wrong   = answered - correct;
+  const pct = answered > 0 ? Math.round((correct / 30) * 100) : 0; // score against total possible
+
+  document.getElementById('resultsSub').textContent = answered + ' / 30 Questions Answered' + (timeExpired ? ' (Time Expired)' : '');
+  document.getElementById('rCorrect').textContent = correct;
+  document.getElementById('rWrong').textContent = wrong;
+  document.getElementById('ringPct').textContent = pct + '%';
+
+  // Ring animation
+  const circ = 2 * Math.PI * 42;
+  const offset = circ - (pct / 100) * circ;
+  setTimeout(() => {
+    document.getElementById('ringFg').setAttribute('stroke-dashoffset', offset);
+  }, 100);
+
+  const ringFg = document.getElementById('ringFg');
+  const ringPct = document.getElementById('ringPct');
+  const color = pct >= 80 ? '#70C890' : (pct >= 60 ? '#C8A84B' : '#B84040');
+  ringFg.setAttribute('stroke', color);
+  ringPct.style.color = color;
+
+  const mins = Math.floor(state.timeUsed / 60);
+  const secs = state.timeUsed % 60;
+  document.getElementById('rTime').textContent = mins + 'm ' + String(secs).padStart(2,'0') + 's';
+
+  // Module breakdown
+  const modScores = document.getElementById('modScores');
+  modScores.innerHTML = '';
+  ['m1','m2','m3'].forEach(mid => {
+    const mod = MODULES[mid];
+    const modCorrect = mod.questions.filter(q => state.answers[q.id] && state.answers[q.id].correct).length;
+    const modPct = Math.round((modCorrect / mod.questions.length) * 100);
+    const barClass = modPct >= 80 ? 'good' : (modPct >= 60 ? '' : 'bad');
+    modScores.innerHTML += '<div class="mod-score-row">' +
+      '<span class="msr-lbl">' + mod.title + '</span>' +
+      '<div class="msr-bar-wrap"><div class="msr-bar ' + barClass + '" style="width:' + modPct + '%"></div></div>' +
+      '<span class="msr-val">' + modCorrect + ' / ' + mod.questions.length + ' &middot; ' + modPct + '%</span>' +
+    '</div>';
+  });
+
+  // Verdict
+  const verdictBox = document.getElementById('verdictBox');
+  const verdictLabel = document.getElementById('verdictLabel');
+  const verdictText = document.getElementById('verdictText');
+  if (pct >= 90) {
+    verdictBox.className = 'verdict-box pass';
+    verdictLabel.textContent = 'Verdict: Domain 1 Ready';
+    verdictText.textContent = pct + '% overall. You have strong command of Domain 1 material. Move to Domain 2 in your schedule.';
+  } else if (pct >= 80) {
+    verdictBox.className = 'verdict-box pass';
+    verdictLabel.textContent = 'Verdict: Passing';
+    verdictText.textContent = pct + '% overall. You are at the pass threshold. Review the ' + wrong + ' missed questions tonight. Focus on any module scoring below 80%.';
+  } else if (pct >= 60) {
+    verdictBox.className = 'verdict-box fail';
+    verdictLabel.textContent = 'Verdict: Below Pass';
+    verdictText.textContent = pct + '% overall. You need 80% to feel confident on Domain 1 exam questions. Return to lessons 1.1 through 1.3 for any module scoring below 80%, then re-run this lab.';
+  } else {
+    verdictBox.className = 'verdict-box fail';
+    verdictLabel.textContent = 'Verdict: High Risk';
+    verdictText.textContent = pct + '% overall. This is far below the pass threshold. Do not proceed to Domain 2 material until Domain 1 fundamentals are locked in. Re-read all three Domain 1 lessons and re-run this lab from the start.';
+  }
+
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+function exportResults() {
+  const answered = Object.keys(state.answers).length;
+  const correct = Object.values(state.answers).filter(a => a.correct).length;
+  const pct = answered > 0 ? Math.round((correct / 30) * 100) : 0;
+  const mins = Math.floor(state.timeUsed / 60);
+  const secs = state.timeUsed % 60;
+
+  let out = 'SECURITY+ SY0-701 : DOMAIN 1 MASTERY LAB RESULTS\n';
+  out += '=====================================================\n\n';
+  out += 'Score:      ' + pct + '% (' + correct + ' / 30)\n';
+  out += 'Time Used:  ' + mins + 'm ' + secs + 's\n';
+  out += 'Date:       ' + new Date().toLocaleString() + '\n';
+  out += 'Pass Mark:  80%\n\n';
+
+  out += '── MODULE BREAKDOWN ──\n';
+  ['m1','m2','m3'].forEach(mid => {
+    const mod = MODULES[mid];
+    const modCorrect = mod.questions.filter(q => state.answers[q.id] && state.answers[q.id].correct).length;
+    const modPct = Math.round((modCorrect / mod.questions.length) * 100);
+    out += mod.title + ': ' + modCorrect + '/' + mod.questions.length + ' (' + modPct + '%)\n';
+  });
+
+  out += '\n── MISSED QUESTIONS ──\n';
+  ['m1','m2','m3'].forEach(mid => {
+    const mod = MODULES[mid];
+    mod.questions.forEach((q, i) => {
+      const ans = state.answers[q.id];
+      if (ans && !ans.correct) {
+        out += '\n[' + mod.title + '] Q' + (i + 1) + ': ' + q.text + '\n';
+        if (mod.type === 'dual') {
+          out += '  Your answer:    ' + (ans.selected.cat || '?') + ' + ' + (ans.selected.type || '?') + '\n';
+          out += '  Correct answer: ' + q.category + ' + ' + q.typeAnswer + '\n';
+        } else {
+          out += '  Your answer:    ' + q.options[ans.selected] + '\n';
+          out += '  Correct answer: ' + q.options[q.answer] + '\n';
+        }
+      }
+    });
+  });
+
+  const blob = new Blob([out], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sp701-domain1-lab-' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════════
+
+function confirmReset() {
+  if (!confirm('Reset the entire lab? All progress and scores will be erased. This cannot be undone.')) return;
+  lsClear();
+  location.reload();
+}
+</script>
+
+</body>
+</html>

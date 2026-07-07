@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEC+ SY0-701 | 2.1 Threat Actor Taxonomy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --paper:     #111318;
+      --surf:      #181C22;
+      --surf2:     #1F2430;
+      --surf3:     #252C3A;
+      --rule:      #2A3040;
+      --rule2:     #364050;
+      --steel:     #5B8DB8;
+      --steel-lo:  rgba(91,141,184,0.09);
+      --steel-md:  rgba(91,141,184,0.16);
+      --steel-dim: #2B4A68;
+      --steel-hi:  #7AAEE0;
+      --alert:     #B84040;
+      --alert-lo:  rgba(184,64,64,0.09);
+      --alert-dim: #5A1818;
+      --pass:      #3E9A5A;
+      --pass-lo:   rgba(62,154,90,0.08);
+      --pass-dim:  #1A4A28;
+      --gold:      #C8A84B;
+      --gold-lo:   rgba(200,168,75,0.08);
+      --gold-dim:  #6B5820;
+      --cream:     #EDE8E0;
+      --cream-d:   #A8A098;
+      --cream-dd:  #606058;
+      --display:   'Libre Baskerville', serif;
+      --mono:      'Courier Prime', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 16px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(91,141,184,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ── PROGRESS ────────────────────────────────────────────── */
+    .prog-rail { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--rule); z-index: 300; }
+    .prog-fill  { height: 100%; background: var(--steel); transition: width 0.2s; }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 28px 120px; }
+
+    /* ── TOP BANNER ─────────────────────────────────────────── */
+    .top-banner {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      padding: 7px 0; background: var(--steel-dim); margin: 0 -28px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel-hi);
+    }
+
+    /* ── LESSON HEADER ──────────────────────────────────────── */
+    .lesson-header { padding: 52px 0 36px; border-bottom: 1px solid var(--rule2); }
+
+    .breadcrumb {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--cream-dd); margin-bottom: 20px;
+    }
+    .breadcrumb a { color: var(--steel); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--steel-hi); }
+    .breadcrumb span { color: var(--cream-dd); }
+
+    .lesson-eyebrow {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 10px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+    }
+
+    .lesson-title {
+      font-family: var(--display); font-size: clamp(30px, 5vw, 52px);
+      font-weight: 700; line-height: 1.05; color: var(--cream);
+      letter-spacing: -0.02em; margin-bottom: 14px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.2s forwards;
+    }
+    .lesson-title em { font-style: italic; color: var(--steel-hi); }
+
+    .lesson-sub {
+      font-family: var(--display); font-style: italic; font-size: 17px;
+      color: var(--cream-d); max-width: 680px; line-height: 1.7; margin-bottom: 24px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.25s forwards;
+    }
+
+    .badge-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.3s forwards;
+    }
+    .badge {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 12px;
+      border: 1px solid;
+    }
+    .badge-blue   { color: var(--steel-hi);  border-color: var(--steel-dim);  background: var(--steel-lo); }
+    .badge-gold   { color: var(--gold);       border-color: var(--gold-dim);   background: var(--gold-lo); }
+    .badge-red    { color: #E07070;           border-color: var(--alert-dim);  background: var(--alert-lo); }
+    .badge-green  { color: #70C890;           border-color: var(--pass-dim);   background: var(--pass-lo); }
+
+    /* ── SECTION STRUCTURE ──────────────────────────────────── */
+    .section-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel);
+      margin: 52px 0 18px; display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--rule2); }
+
+    h2 {
+      font-family: var(--display); font-size: 22px; font-weight: 700;
+      color: var(--cream); line-height: 1.3; margin: 40px 0 14px;
+      letter-spacing: -0.01em;
+    }
+    h2 .ch-num {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      color: var(--steel-dim); letter-spacing: 0.14em; text-transform: uppercase;
+      display: block; margin-bottom: 4px;
+    }
+
+    h3 {
+      font-family: var(--display); font-size: 17px; font-weight: 700;
+      color: var(--cream-d); margin: 28px 0 10px; letter-spacing: -0.01em;
+    }
+    h3 .actor-tag {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel-hi);
+      background: var(--steel-lo); border: 1px solid var(--steel-dim);
+      padding: 2px 10px; margin-left: 10px; vertical-align: middle;
+    }
+    h3 .actor-tag.ext  { color: #E07070; background: var(--alert-lo); border-color: var(--alert-dim); }
+    h3 .actor-tag.int  { color: var(--gold); background: var(--gold-lo); border-color: var(--gold-dim); }
+
+    p { color: var(--cream-d); margin-bottom: 16px; font-size: 16px; }
+    p strong { color: var(--cream); font-weight: 700; }
+
+    /* ── INFO CARD ──────────────────────────────────────────── */
+    .info-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel); padding: 18px 22px; margin: 20px 0;
+    }
+    .info-card.warn  { border-left-color: var(--alert); background: var(--alert-lo); }
+    .info-card.pass  { border-left-color: var(--pass);  background: var(--pass-lo);  }
+    .info-card.gold  { border-left-color: var(--gold);  background: var(--gold-lo);  }
+
+    .info-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .info-card       .info-label { color: var(--steel); }
+    .info-card.warn  .info-label { color: #E07070; }
+    .info-card.pass  .info-label { color: #70C890; }
+    .info-card.gold  .info-label { color: var(--gold); }
+
+    .info-card p { margin-bottom: 0; }
+
+    /* ── TABLE ──────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--display); font-size: 14px;
+    }
+    thead tr { background: var(--surf2); border-bottom: 2px solid var(--steel-dim); }
+    thead th {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--steel-hi); padding: 10px 14px; text-align: left;
+    }
+    tbody tr { border-bottom: 1px solid var(--rule); }
+    tbody tr:hover { background: var(--surf); }
+    tbody td { padding: 10px 14px; color: var(--cream-d); vertical-align: top; line-height: 1.6; }
+    tbody td strong { color: var(--cream); }
+    tbody td:first-child { color: var(--cream); font-weight: 700; white-space: nowrap; }
+
+    /* ── CODE BLOCK ─────────────────────────────────────────── */
+    .code-block {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim);
+      font-family: var(--mono); font-size: 13px; color: var(--cream-d);
+      padding: 18px 20px; margin: 20px 0; overflow-x: auto;
+      line-height: 1.7; white-space: pre;
+    }
+    .code-block .c-hl  { color: var(--steel-hi); font-weight: 700; }
+    .code-block .c-key { color: var(--gold); }
+    .code-block .c-val { color: #7EC8A0; }
+    .code-block .c-dim { color: var(--cream-dd); }
+
+    /* ── COMPARE GRID ────────────────────────────────────────── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .compare-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel-dim); padding: 16px 18px;
+    }
+    .compare-card.compare-alt { border-top-color: var(--gold-dim); }
+    .compare-card.compare-red { border-top-color: var(--alert-dim); }
+    .compare-title {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .compare-card            .compare-title { color: var(--steel-hi); }
+    .compare-card.compare-alt .compare-title { color: var(--gold); }
+    .compare-card.compare-red .compare-title { color: #E07070; }
+    .compare-card ul { padding-left: 16px; }
+    .compare-card li  { font-size: 13px; color: var(--cream-d); line-height: 1.7; margin-bottom: 4px; }
+
+    /* ── ACTOR GRID ─────────────────────────────────────────── */
+    .actor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+    .actor-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel-dim); padding: 14px 16px;
+    }
+    .actor-card.ac-ext { border-top-color: var(--alert-dim); }
+    .actor-card.ac-int { border-top-color: var(--gold-dim); }
+    .actor-name {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .actor-card        .actor-name { color: var(--steel-hi); }
+    .actor-card.ac-ext .actor-name { color: #E07070; }
+    .actor-card.ac-int .actor-name { color: var(--gold); }
+    .actor-attr { font-size: 12px; color: var(--cream-dd); line-height: 1.5; }
+    .actor-attr span { display: block; }
+    .actor-attr strong { color: var(--cream-d); }
+
+    /* ── Q&A ────────────────────────────────────────────────── */
+    .qa-block { margin: 18px 0; }
+
+    .qa-question {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim); padding: 16px 18px 16px 18px;
+    }
+    .qa-num {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 8px;
+    }
+    .qa-text { font-size: 15px; color: var(--cream); line-height: 1.65; }
+    .qa-scenario {
+      font-family: var(--display); font-style: italic; font-size: 14px;
+      color: var(--cream-dd); border-left: 2px solid var(--rule2);
+      padding-left: 12px; margin-bottom: 10px; line-height: 1.6;
+    }
+
+    .qa-reveal {
+      background: transparent; border: none; border-top: 1px solid var(--rule);
+      width: 100%; padding: 10px 18px; text-align: left; cursor: pointer;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel-dim);
+      display: flex; align-items: center; gap: 8px; transition: color 0.15s, background 0.15s;
+    }
+    .qa-reveal:hover { background: var(--steel-lo); color: var(--steel-hi); }
+    .qa-reveal .arrow { transition: transform 0.2s; font-size: 12px; }
+    .qa-reveal.open   { color: var(--steel-hi); }
+    .qa-reveal.open .arrow { transform: rotate(90deg); }
+
+    .qa-answer {
+      display: none; background: var(--surf2); border: 1px solid var(--rule2);
+      border-top: none; padding: 16px 18px;
+    }
+    .qa-answer.show { display: block; animation: fadeUp 0.25s ease forwards; }
+    .qa-answer p { font-size: 14px; margin-bottom: 10px; }
+    .qa-answer p:last-child { margin-bottom: 0; }
+    .qa-answer strong { color: var(--steel-hi); }
+    .qa-answer .answer-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--pass);
+      margin-bottom: 8px;
+    }
+
+    /* ── RESOURCES ──────────────────────────────────────────── */
+    .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 16px 0; }
+    .resource-card {
+      background: var(--surf); border: 1px solid var(--rule2); padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .resource-name { font-family: var(--display); font-size: 14px; font-weight: 700; color: var(--cream); }
+    .resource-use  { font-family: var(--display); font-style: italic; font-size: 12px; color: var(--cream-dd); }
+    .resource-tag  { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--steel); text-transform: uppercase; margin-top: 4px; }
+
+    /* ── NEXT STEPS ─────────────────────────────────────────── */
+    .next-block {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel); padding: 22px 24px; margin-top: 40px;
+    }
+    .next-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--steel); margin-bottom: 14px; }
+    .next-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .next-item  {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+      color: var(--cream-dd); line-height: 1.5;
+    }
+    .next-cmd   { color: var(--steel-hi); font-weight: 700; white-space: nowrap; }
+
+    /* ── MENU ───────────────────────────────────────────────── */
+    .cmd-menu {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      padding: 16px 20px; margin-top: 20px;
+      font-family: var(--mono); font-size: 11px;
+    }
+    .cmd-menu-label { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cream-dd); margin-bottom: 10px; }
+    .cmd-row { display: flex; gap: 8px; align-items: baseline; margin: 5px 0; }
+    .cmd     { color: var(--steel-hi); font-weight: 700; min-width: 88px; }
+    .cmd-desc { color: var(--cream-dd); font-size: 10px; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    .lesson-footer {
+      margin-top: 60px; padding: 18px 0 0; border-top: 1px solid var(--rule2);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--cream-dd); text-transform: uppercase; }
+    .footer-id span { color: var(--steel-hi); }
+    .footer-hub {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--cream-dd); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-hub:hover { color: var(--steel-hi); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 640px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .actor-grid   { grid-template-columns: 1fr 1fr; }
+      .next-grid    { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 420px) {
+      .actor-grid   { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="prog-rail"><div class="prog-fill" id="progFill"></div></div>
+
+<div class="top-banner">Security+ SY0-701 &mdash; Week 2 &mdash; Domain 2.0 &mdash; Lesson 2.1</div>
+
+<div class="page">
+
+  <!-- ── HEADER ───────────────────────────────────────────────── -->
+  <header class="lesson-header">
+    <div class="breadcrumb">
+      <a href="security-plus-hub.html">Security+ Hub</a>
+      <span> / Domain 2.0 / Lesson 2.1</span>
+    </div>
+    <div class="lesson-eyebrow">Chapter 2.1 &mdash; Domain 2.0: Threats, Vulnerabilities, and Mitigations</div>
+    <h1 class="lesson-title">Threat Actor<br><em>Taxonomy</em></h1>
+    <p class="lesson-sub">The exam tests your ability to classify attackers by motivation, sophistication, and access position. Most candidates memorize actor names. The exam tests whether you can map a scenario description to the correct actor type under pressure.</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">Lesson 2.1</span>
+      <span class="badge badge-gold">Domain 2.0 &mdash; 22%</span>
+      <span class="badge badge-red">13 Days to Exam</span>
+      <span class="badge badge-green">Est. 75 min</span>
+    </div>
+  </header>
+
+  <!-- ── OVERVIEW ─────────────────────────────────────────────── -->
+  <div class="section-label">Overview</div>
+
+  <div class="info-card gold">
+    <div class="info-label">Why This Lesson Matters</div>
+    <p>Objective 2.1 covers threat actor types and attributes. Expect 4 to 6 questions in scenario format. The exam will not ask you to define a hacktivist. It will describe an attack and ask you to identify who conducted it. You need the four actor attributes locked in before any actor type will stick.</p>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">What Carries Over From Network+</div>
+    <p>CIA triad, AAA, basic threat awareness. That foundation is sufficient. This lesson builds the actor classification layer that Security+ requires and Network+ does not cover.</p>
+  </div>
+
+  <!-- ── CHAPTER 1: ACTOR ATTRIBUTES ──────────────────────────── -->
+  <h2><span class="ch-num">Chapter 01</span>Threat Actor Attributes</h2>
+
+  <p>Before memorizing actor types, lock in the four dimensions used to describe any actor. Every exam question that asks you to identify an actor type is really asking you to classify these four dimensions first, then match them to a type.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+          <th>What the Exam Tests</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Motivation</strong></td>
+          <td>Why they attack: financial gain, ideology, revenge, espionage, notoriety, disruption</td>
+          <td>Distinguishes hacktivist (ideology) from organized crime (financial) from nation-state (geopolitical)</td>
+        </tr>
+        <tr>
+          <td><strong>Sophistication</strong></td>
+          <td>Skill level: commodity tools vs. custom zero-day exploits vs. everything between</td>
+          <td>Separates script kiddie (public tools, no custom skill) from nation-state (zero-days, custom malware)</td>
+        </tr>
+        <tr>
+          <td><strong>Resources / Funding</strong></td>
+          <td>Time, money, personnel, and infrastructure available to the actor</td>
+          <td>Nation-state has state budgets; script kiddie has a laptop and free tools; organized crime is funded by criminal proceeds</td>
+        </tr>
+        <tr>
+          <td><strong>Internal vs. External</strong></td>
+          <td>Whether the actor has authorized access to the target environment before the attack begins</td>
+          <td>Insider threat is always internal; all other types are external by default</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">How to Use These Attributes</div>
+    <p>Read the exam scenario. Identify motivation first, then check sophistication and resource level. The internal/external axis resolves the insider threat question. Match those four answers to the actor type. This order is faster and more reliable than trying to pattern-match actor names directly to scenarios.</p>
+  </div>
+
+  <!-- ── CHAPTER 2: ACTOR TYPES ────────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 02</span>Threat Actor Types</h2>
+
+  <p>Six actor types appear on the exam. Each maps cleanly to the four attributes above. Study the attributes, not the labels.</p>
+
+  <!-- Nation-State -->
+  <h3>Nation-State Actors <span class="actor-tag ext">External</span></h3>
+
+  <p>Nation-state actors are government-sponsored groups conducting attacks to advance national interests. They represent the highest-capability threat on the exam.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>Nation-State Value</th></tr></thead>
+      <tbody>
+        <tr><td>Motivation</td><td>Geopolitical espionage, critical infrastructure sabotage, intellectual property theft, election interference</td></tr>
+        <tr><td>Sophistication</td><td>Highest available. Access to zero-day exploits, custom malware, and long-duration stealth campaigns</td></tr>
+        <tr><td>Resources</td><td>State-level budgets. Large teams, persistent infrastructure, offensive cyber units</td></tr>
+        <tr><td>Position</td><td>External. Does not begin with authorized access to the target</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Exam Trap: APT Is Not a Synonym for Nation-State</div>
+    <p>Advanced Persistent Threat (APT) describes a campaign behavior pattern: high sophistication, long dwell time, stealthy exfiltration. Nation-states are the most common APT operators, but APT is a campaign type, not an actor type. The exam will test this distinction. If a question asks for the actor type and the scenario describes a government-sponsored group, the answer is nation-state. APT is the campaign classification, not the actor classification. Chapter 03 covers APT in full.</p>
+  </div>
+
+  <p><strong>Exam signal words for nation-state:</strong> government-sponsored, geopolitical, critical infrastructure, classified research theft, long-term stealthy access, foreign adversary, military targeting.</p>
+
+  <!-- Hacktivists -->
+  <h3>Hacktivists <span class="actor-tag ext">External</span></h3>
+
+  <p>Hacktivists attack to advance a political, social, or ideological cause. The motivation is belief, not profit.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card compare-alt">
+      <div class="compare-title">Hacktivist Characteristics</div>
+      <ul>
+        <li>Ideology-driven: attacking targets they oppose on principle</li>
+        <li>Low to medium sophistication, often use existing tools</li>
+        <li>DDoS-for-hire services, web defacement tools, leak platforms</li>
+        <li>Volunteer-based, limited funding, opportunistic targeting</li>
+        <li>Goal is disruption and public embarrassment of the target</li>
+      </ul>
+    </div>
+    <div class="compare-card">
+      <div class="compare-title">Common Hacktivist Techniques</div>
+      <ul>
+        <li>Website defacement with political messaging</li>
+        <li>DDoS attacks against high-profile targets</li>
+        <li>Data exfiltration and public release to embarrass</li>
+        <li>Credential dumps posted publicly</li>
+        <li>Social media account hijacking for message amplification</li>
+      </ul>
+    </div>
+  </div>
+
+  <p><strong>Exam signal words for hacktivist:</strong> political protest, ideological opposition, deface, leaked documents to embarrass, anti-corporation, activist group, cause-driven attack.</p>
+
+  <!-- Organized Crime -->
+  <h3>Organized Crime <span class="actor-tag ext">External</span></h3>
+
+  <p>Organized crime attacks for financial gain. This is the most financially motivated actor type on the exam. They operate like a business: systematic, profit-focused, and increasingly using ransomware-as-a-service platforms.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>Organized Crime Value</th></tr></thead>
+      <tbody>
+        <tr><td>Motivation</td><td>Financial: ransom payments, banking fraud, credential theft for resale, extortion, BEC fraud</td></tr>
+        <tr><td>Sophistication</td><td>Medium to high. Increasingly use RaaS platforms that separate developers from operators</td></tr>
+        <tr><td>Resources</td><td>Significant and growing. Funded by criminal proceeds. Structured teams with specialists</td></tr>
+        <tr><td>Position</td><td>External</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">Ransomware-as-a-Service (RaaS)</div>
+    <p>RaaS is a criminal business model where ransomware developers lease their tools to operators who conduct the actual attacks and split the ransom payment. This separates technical sophistication (developer) from the attack execution (operator). The exam tests awareness of this model. It explains why organized crime sophistication is classified as medium to high even when individual operators are not technically skilled.</p>
+  </div>
+
+  <p><strong>Exam signal words for organized crime:</strong> ransom, pay to recover, financial gain, criminal enterprise, business email compromise, credit card theft, credential resale, RaaS.</p>
+
+  <!-- Insider Threat -->
+  <h3>Insider Threats <span class="actor-tag int">Internal</span></h3>
+
+  <p>An insider threat is any attack or risk originating from someone who has authorized access to the environment. This is the only actor type classified as internal.</p>
+
+  <div class="compare-grid">
+    <div class="compare-card compare-red">
+      <div class="compare-title">Malicious Insider</div>
+      <ul>
+        <li>Intentional harm: data theft, sabotage, fraud</li>
+        <li>Motivated by financial gain, revenge, or ideological disagreement</li>
+        <li>Knows the environment: most dangerous variant</li>
+        <li>Classic example: disgruntled employee copying data before resignation</li>
+        <li>Technical skill varies widely</li>
+      </ul>
+    </div>
+    <div class="compare-card compare-alt">
+      <div class="compare-title">Unintentional Insider</div>
+      <ul>
+        <li>No harmful intent but causes damage through negligence or ignorance</li>
+        <li>Clicks a phishing link, misconfigures a system, shares credentials</li>
+        <li>No malicious motivation: this is a human error threat</li>
+        <li>Shadow IT falls in this category</li>
+        <li>Most common insider threat type by volume</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-card gold">
+    <div class="info-label">Shadow IT</div>
+    <p>Shadow IT occurs when employees deploy unauthorized systems, apps, or cloud services outside IT department awareness. It is an unintentional insider threat. The risk is data exposure through unsanctioned tools with unknown security posture. The exam tests this as an insider threat variant, not as a technology category. Example: an employee uploads customer data to a personal Dropbox account for convenience. No malicious intent. Still an insider threat.</p>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Why Insider Threats Are Disproportionately Dangerous</div>
+    <p>Perimeter controls do not stop an insider. Firewalls, IPS, and network access controls assume the attacker is outside. An insider already has authorized access, knows where data lives, and understands normal system behavior. Detection requires behavioral analytics, user activity monitoring, and data loss prevention tools rather than perimeter security. Your VLAN knowledge is relevant here: proper segmentation limits what an insider can reach from any given access point.</p>
+  </div>
+
+  <p><strong>Exam signal words for insider threat:</strong> employee, contractor, authorized access, internal, before resignation, disgruntled, copies to USB, shadow IT, accidental exposure, wrong recipient.</p>
+
+  <!-- Script Kiddies -->
+  <h3>Script Kiddies <span class="actor-tag ext">External</span></h3>
+
+  <p>Script kiddies use tools and exploits written by others without understanding how they work. They represent high-volume, low-sophistication attacks. They are a real operational threat because modern tools have become powerful enough that low-skill operators can cause genuine damage.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>Script Kiddie Value</th></tr></thead>
+      <tbody>
+        <tr><td>Motivation</td><td>Notoriety, curiosity, bragging rights, thrill</td></tr>
+        <tr><td>Sophistication</td><td>Very low. Skill is in operating pre-built tools, not building them. No custom capability.</td></tr>
+        <tr><td>Resources</td><td>Minimal. Tools are free and publicly available.</td></tr>
+        <tr><td>Position</td><td>External</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Exam signal words for script kiddie:</strong> publicly available tool, downloaded from GitHub, unsophisticated, curiosity, notoriety, no custom capability, scanning tool, known exploit used without modification.</p>
+
+  <!-- Competitors -->
+  <h3>Competitors <span class="actor-tag ext">External</span></h3>
+
+  <p>Competitors conduct corporate espionage to gain business advantage. Less frequently tested than other types but appears in scenario questions involving trade secrets, R&amp;D data, or manufacturing processes.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>Competitor Value</th></tr></thead>
+      <tbody>
+        <tr><td>Motivation</td><td>Business advantage, intellectual property theft, competitive intelligence, sabotage</td></tr>
+        <tr><td>Sophistication</td><td>Variable. May hire skilled contractors or conduct their own operations</td></tr>
+        <tr><td>Resources</td><td>Corporate budget. Significant but not state-level.</td></tr>
+        <tr><td>Position</td><td>External</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── CHAPTER 3: APT ─────────────────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 03</span>Advanced Persistent Threat in Depth</h2>
+
+  <p>APT is tested as a behavior pattern and campaign type, not as an actor label. The exam wants you to recognize APT characteristics in a scenario and understand what security controls it evades.</p>
+
+  <div class="code-block"><span class="c-hl">APT: Three Defining Characteristics</span>
+
+<span class="c-key">Advanced</span>
+   <span class="c-val">Uses sophisticated, often custom techniques.</span>
+   <span class="c-dim">Not limited to off-the-shelf tools. May include custom malware, zero-days,</span>
+   <span class="c-dim">and living-off-the-land techniques that evade standard AV detection.</span>
+
+<span class="c-key">Persistent</span>
+   <span class="c-val">Maintains long-term access. Measured in months or years, not days.</span>
+   <span class="c-dim">Average historical dwell time before detection exceeds 200 days.</span>
+   <span class="c-dim">Establishes redundant persistence mechanisms against eviction.</span>
+
+<span class="c-key">Threat</span>
+   <span class="c-val">Has both the capability and the active intent to cause harm.</span>
+   <span class="c-dim">Not a vulnerability or a misconfiguration. An actor with a goal.</span></div>
+
+  <div class="info-card">
+    <div class="info-label">APT Campaign Phases (Exam Context)</div>
+    <p>The exam tests APT as a multi-phase campaign. Initial access through spear phishing or a supply chain compromise. Privilege escalation to reach higher-value systems. Lateral movement through the network over time. Data staging and slow exfiltration in small encrypted transfers to avoid anomaly detection. The slow, deliberate pace is what makes APT operationally difficult to detect with threshold-based alerting.</p>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">APT and Your Network Background</div>
+    <p>An APT actor who compromises one endpoint will move laterally across VLANs toward higher-value targets. Your VLAN segmentation and access control knowledge maps directly here. Proper microsegmentation limits how far lateral movement can reach from any initial compromise. An attacker who lands in a user VLAN should not be able to reach the server VLAN, the management VLAN, or OOB management interfaces without additional authentication. Defense-in-depth applied to network architecture is one of the primary APT countermeasures.</p>
+  </div>
+
+  <!-- ── CHAPTER 4: THREAT INTEL ───────────────────────────────── -->
+  <h2><span class="ch-num">Chapter 04</span>Threat Intelligence and Attribution</h2>
+
+  <p>Threat intelligence is information used to understand who is attacking, how, and why. The exam tests intelligence sources, types, and the MITRE ATT&amp;CK framework.</p>
+
+  <h3>Intelligence Sources</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Description</th>
+          <th>Key Trait</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>OSINT</strong></td>
+          <td>Open Source Intelligence: publicly available information from news, social media, public databases, threat blogs, and government advisories</td>
+          <td>Free, broad, variable quality. No special access required.</td>
+        </tr>
+        <tr>
+          <td><strong>Closed / Proprietary</strong></td>
+          <td>Paid vendor feeds from commercial threat intelligence providers</td>
+          <td>Higher quality, curated, contextualized. Not free. Examples: Recorded Future, Mandiant, CrowdStrike.</td>
+        </tr>
+        <tr>
+          <td><strong>ISAC</strong></td>
+          <td>Information Sharing and Analysis Center: sector-specific organizations where trusted peers share real incident data</td>
+          <td>Sector focus and trusted peer relationship distinguish ISACs from public feeds. FS-ISAC (financial), H-ISAC (healthcare).</td>
+        </tr>
+        <tr>
+          <td><strong>Vulnerability Databases</strong></td>
+          <td>NVD (National Vulnerability Database), CVE list, CWE (Common Weakness Enumeration)</td>
+          <td>Technical intelligence on known weaknesses. Free, authoritative, maintained by NIST and MITRE.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Exam Distinction: ISAC vs. Public Threat Feed</div>
+    <p>The key differentiator for ISACs is the trusted peer community and sector specificity. An ISAC shares real incident data among organizations in the same industry who have agreed to share. A public threat feed is open to anyone. When a scenario describes financial sector organizations sharing breach data with each other, the answer is ISAC, not OSINT.</p>
+  </div>
+
+  <h3>MITRE ATT&amp;CK Framework</h3>
+
+  <p>ATT&amp;CK (Adversarial Tactics, Techniques, and Common Knowledge) is a publicly maintained knowledge base of threat actor behaviors organized by tactics and techniques. It is maintained by MITRE and freely available at attack.mitre.org.</p>
+
+  <div class="code-block"><span class="c-hl">MITRE ATT&CK: Three Levels</span>
+
+<span class="c-key">Tactics</span>        <span class="c-val">The adversary's goal during a given phase of the attack.</span>
+                <span class="c-dim">Examples: Initial Access, Execution, Persistence, Privilege Escalation,</span>
+                <span class="c-dim">Defense Evasion, Credential Access, Discovery, Lateral Movement,</span>
+                <span class="c-dim">Collection, Exfiltration, Impact.</span>
+
+<span class="c-key">Techniques</span>     <span class="c-val">The specific method used to achieve a tactic.</span>
+                <span class="c-dim">Example: Spear Phishing Attachment achieves Initial Access.</span>
+                <span class="c-dim">Pass the Hash achieves Lateral Movement.</span>
+
+<span class="c-key">Procedures</span>     <span class="c-val">The specific implementation a particular threat actor uses.</span>
+                <span class="c-dim">How a known group applies a technique in their actual campaigns.</span>
+                <span class="c-dim">Used for attribution and threat hunting.</span></div>
+
+  <div class="info-card">
+    <div class="info-label">What the Exam Tests About ATT&amp;CK</div>
+    <p>You need to know what ATT&amp;CK is, what problem it solves (cataloging threat actor behavior for defensive use), and the three-level structure (Tactics / Techniques / Procedures). The exam does not test specific ATT&amp;CK technique IDs. It does test whether you understand that ATT&amp;CK is used by blue teams for threat hunting, detection rule development, and gap analysis against known adversary behaviors.</p>
+  </div>
+
+  <h3>TTPs: Tactics, Techniques, and Procedures</h3>
+
+  <p>TTPs describe how a specific threat actor operates. They are the behavioral fingerprint used in threat intelligence reporting to attribute attacks to known groups and to build defenses against anticipated methods. When a threat intelligence report says an actor "uses spear phishing for initial access and DNS tunneling for exfiltration," it is describing TTPs.</p>
+
+  <!-- ── MASTER REFERENCE TABLE ─────────────────────────────────── -->
+  <div class="section-label">Actor Quick Reference</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Actor Type</th>
+          <th>Primary Motivation</th>
+          <th>Sophistication</th>
+          <th>Position</th>
+          <th>Exam Signal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Nation-State</strong></td>
+          <td>Espionage, sabotage, geopolitical</td>
+          <td>Highest</td>
+          <td>External</td>
+          <td>Government, classified, critical infrastructure, long-term</td>
+        </tr>
+        <tr>
+          <td><strong>Hacktivist</strong></td>
+          <td>Ideology, publicity, disruption</td>
+          <td>Low to medium</td>
+          <td>External</td>
+          <td>Political, protest, deface, leak to embarrass</td>
+        </tr>
+        <tr>
+          <td><strong>Organized Crime</strong></td>
+          <td>Financial gain</td>
+          <td>Medium to high</td>
+          <td>External</td>
+          <td>Ransom, pay to recover, fraud, criminal enterprise</td>
+        </tr>
+        <tr>
+          <td><strong>Malicious Insider</strong></td>
+          <td>Financial, revenge</td>
+          <td>Variable</td>
+          <td>Internal</td>
+          <td>Employee, contractor, before resignation, authorized access</td>
+        </tr>
+        <tr>
+          <td><strong>Unintentional Insider</strong></td>
+          <td>None (negligence)</td>
+          <td>N/A</td>
+          <td>Internal</td>
+          <td>Accidental, clicked, misconfigured, shadow IT</td>
+        </tr>
+        <tr>
+          <td><strong>Script Kiddie</strong></td>
+          <td>Notoriety, curiosity</td>
+          <td>Very low</td>
+          <td>External</td>
+          <td>Public tool, downloaded, no custom skill, experimenting</td>
+        </tr>
+        <tr>
+          <td><strong>Competitor</strong></td>
+          <td>Business advantage</td>
+          <td>Variable</td>
+          <td>External</td>
+          <td>Trade secrets, R&amp;D data, corporate espionage</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Q&A ───────────────────────────────────────────────────── -->
+  <div class="section-label">Q &amp; A</div>
+
+  <p>Attempt every answer before revealing. Write it out. The exam has no partial credit and no backtracking penalty.</p>
+
+  <!-- Q1 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 01 of 08</div>
+      <p class="qa-scenario">An attacker defaces a company's public-facing website with a political manifesto opposing the company's environmental record. Internal documents are leaked to a news organization to publicize the company's practices.</p>
+      <p class="qa-text">What threat actor type conducted this attack? What is the primary motivation?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Actor type: Hacktivist.</strong> Motivation is ideological opposition to the company's business practices, not financial gain.</p>
+      <p>The two techniques, defacement and a public leak, are both consistent with hacktivist goals: disruption and reputational damage in service of a cause. No ransom demand is made. The attack is not stealthy. These signals eliminate organized crime (financial) and nation-state (geopolitical, stealthy).</p>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 02 of 08</div>
+      <p class="qa-scenario">A threat actor maintains access to a defense contractor's network for 14 months. During that period, the actor moves laterally through multiple segments, accesses engineering files for a classified aircraft program, and exfiltrates data in small encrypted packets to avoid anomaly detection. No ransom demand is issued.</p>
+      <p class="qa-text">What campaign type is this? What actor type is most likely? Why is organized crime eliminated?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Campaign type: Advanced Persistent Threat (APT).</strong> Long dwell time (14 months), lateral movement, stealthy exfiltration, high-value government target. All four APT markers are present.</p>
+      <p><strong>Actor type: Nation-state.</strong> Defense contractor targeting for classified aircraft data is a geopolitical and military intelligence motivation. Nation-state actors have the resources for 14-month campaigns and the sophistication for encrypted, low-volume exfiltration.</p>
+      <p><strong>Organized crime eliminated</strong> because no financial demand is made and the target is classified defense data rather than payment card data or credentials for resale.</p>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 03 of 08</div>
+      <p class="qa-scenario">An employee who was passed over for a promotion copies the entire customer database to a personal USB drive on their last day. They later attempt to sell the data.</p>
+      <p class="qa-text">What threat actor type is this? What distinguishes this from an unintentional insider threat?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Actor type: Malicious insider.</strong> The actor has authorized internal access and acts with deliberate intent to harm the organization and gain financially.</p>
+      <p>The distinguishing factor from an unintentional insider is <strong>intent.</strong> The malicious insider made a conscious decision to steal data and attempted to profit from it. An unintentional insider causes harm through negligence with no harmful intent: clicking a phishing link, misaddressing an email, or using an unsanctioned cloud service for convenience.</p>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 04 of 08</div>
+      <p class="qa-scenario">A junior network technician uploads a configuration backup containing SNMP community strings to a personal Google Drive account so they can access it while working from home. The Google Drive account is not secured with MFA. The backup is publicly shared by mistake.</p>
+      <p class="qa-text">What threat type is this? Is it a shadow IT scenario? What was the actual risk created?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Threat type: Unintentional insider threat.</strong> No malicious intent. The technician was solving a convenience problem without considering security implications.</p>
+      <p><strong>Yes, this is a shadow IT scenario.</strong> The personal Google Drive account is an unsanctioned cloud service used outside IT department knowledge or approval.</p>
+      <p><strong>Risk created:</strong> SNMP community strings exposed publicly allow an attacker to query and potentially write to network devices using SNMP v1/v2. This is a critical credential exposure that could enable full network device compromise. The unintentional insider created a higher-value target for an external attacker than the original data might suggest.</p>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 05 of 08</div>
+      <p class="qa-scenario">An attacker downloads a port scanner and vulnerability scanner from public repositories. They run both tools against a retail company's web server with no specific target selection criteria. They are experimenting and want to see what they can find.</p>
+      <p class="qa-text">What actor type is this? What eliminates nation-state and organized crime?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Actor type: Script kiddie.</strong> Public tools, no custom capability, opportunistic target selection with no specific objective, motivation is curiosity and experimentation.</p>
+      <p><strong>Nation-state eliminated</strong> by the target (a retail company rather than government or defense), the opportunistic selection with no specific target, and the use of public tools with no custom capability. Nation-states select targets deliberately and use sophisticated, often custom techniques.</p>
+      <p><strong>Organized crime eliminated</strong> by the lack of financial motivation and the lack of any plan to monetize access. Organized crime selects targets based on financial return potential.</p>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 06 of 08</div>
+      <p class="qa-text">What is the difference between a Tactic and a Technique in the MITRE ATT&amp;CK framework? Give one example of each.</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>A Tactic is the adversary's goal during a phase of the attack.</strong> Example: Lateral Movement is a tactic. The attacker's goal is to move from the compromised endpoint to other systems in the network.</p>
+      <p><strong>A Technique is the specific method used to achieve that tactic.</strong> Example: Pass the Hash is a technique for achieving Lateral Movement. The attacker uses a captured password hash to authenticate to other systems without knowing the plaintext password.</p>
+      <p>One tactic can have many techniques. Lateral Movement has over 20 documented techniques. The Tactic answers "what are they trying to do." The Technique answers "how are they doing it."</p>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 07 of 08</div>
+      <p class="qa-text">A security team wants to share real-time breach indicators with peer organizations in the same industry sector under a trust agreement. What threat intelligence source type describes this arrangement?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>ISAC (Information Sharing and Analysis Center).</strong> ISACs are sector-specific trusted communities where peer organizations share real incident data under formal trust agreements. The sector specificity and the peer trust model are the defining characteristics that separate ISACs from OSINT (public, no trust required) and proprietary feeds (vendor-to-customer, not peer-to-peer).</p>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 08 of 08</div>
+      <p class="qa-scenario">A competitor hires a contractor to obtain source code from a software company. The contractor gains employment at the target company as a contractor and exfiltrates the source code over three months before leaving.</p>
+      <p class="qa-text">What actor type is the contractor functioning as? What actor type is the competitor? Is this an APT campaign?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>The contractor is functioning as a malicious insider.</strong> Once hired at the target company, the contractor has authorized internal access. The attack uses that authorized access to steal data over time. Internal position plus intentional theft equals malicious insider.</p>
+      <p><strong>The competitor is the organizing actor and fits the competitor actor type.</strong> Motivation is business advantage through intellectual property theft. The competitor funded and directed the operation.</p>
+      <p><strong>This is not classified as an APT campaign on the exam</strong> because APT is most commonly associated with nation-state-level capability. The scenario involves corporate espionage with a human vector (social engineering / insider placement) rather than the technical sophistication associated with APT. It does have a persistence element (three months), but persistence alone does not define APT without the advanced technical capability component.</p>
+    </div>
+  </div>
+
+  <!-- ── RESOURCES ─────────────────────────────────────────────── -->
+  <div class="section-label">Additional Resources</div>
+
+  <div class="resources-grid">
+    <div class="resource-card">
+      <div class="resource-name">MITRE ATT&amp;CK Matrix</div>
+      <div class="resource-use">Full Tactics and Techniques browser. Use to understand what each tactic covers.</div>
+      <div class="resource-tag">Free &mdash; attack.mitre.org</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">Professor Messer SY0-701 Domain 2</div>
+      <div class="resource-use">Video walkthrough of threat actor types and attributes. 20 minutes total.</div>
+      <div class="resource-tag">Free &mdash; professormesser.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">CISA Threat Actor Advisories</div>
+      <div class="resource-use">Real-world nation-state and organized crime threat actor advisories. Context for exam scenarios.</div>
+      <div class="resource-tag">Free &mdash; cisa.gov/news-events/cybersecurity-advisories</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">NVD / CVE Database</div>
+      <div class="resource-use">Official vulnerability database. Understand CVE structure and CVSS scoring context for Lesson 2.4.</div>
+      <div class="resource-tag">Free &mdash; nvd.nist.gov</div>
+    </div>
+  </div>
+
+  <!-- ── WHAT COMES NEXT ───────────────────────────────────────── -->
+  <div class="next-block">
+    <div class="next-label">What Comes Next</div>
+    <p style="color:var(--cream-d);font-size:14px;margin-bottom:14px;">Chapter 2.2 covers attack surface analysis and social engineering. This is one of the highest question-density sections of Domain 2.0. Phishing variants, pretexting, baiting, tailgating, and watering hole attacks. Be ready to distinguish attack types by their specific delivery method and target.</p>
+    <div class="next-grid">
+      <div class="next-item"><span class="next-cmd">/next</span><span>Chapter 2.2: Attack Surface and Social Engineering</span></div>
+      <div class="next-item"><span class="next-cmd">/project</span><span>Build a Threat Actor Classification Lab for this chapter</span></div>
+      <div class="next-item"><span class="next-cmd">/explain</span><span>Deep dive on any concept above</span></div>
+      <div class="next-item"><span class="next-cmd">/save</span><span>You are reading the saved file</span></div>
+    </div>
+  </div>
+
+  <!-- ── MENU ─────────────────────────────────────────────────── -->
+  <div class="cmd-menu">
+    <div class="cmd-menu-label">Command Menu</div>
+    <div class="cmd-row"><span class="cmd">/learn</span><span class="cmd-desc">Topic overview and full study plan</span></div>
+    <div class="cmd-row"><span class="cmd">/lesson</span><span class="cmd-desc">Next lesson: Chapter 2.2 Attack Surface and Social Engineering</span></div>
+    <div class="cmd-row"><span class="cmd">/project</span><span class="cmd-desc">Build a threat actor classification lab</span></div>
+    <div class="cmd-row"><span class="cmd">/explain</span><span class="cmd-desc">Deep dive on any concept from this lesson</span></div>
+    <div class="cmd-row"><span class="cmd">/save</span><span class="cmd-desc">Export last response as styled HTML</span></div>
+    <div class="cmd-row"><span class="cmd">/next</span><span class="cmd-desc">Continue to Chapter 2.2</span></div>
+  </div>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────── -->
+  <footer class="lesson-footer">
+    <div class="footer-id">Security+ SY0-701 &nbsp;/&nbsp; <span>Lesson 2.1</span> &nbsp;/&nbsp; Domain 2.0 &nbsp;/&nbsp; Week 2</div>
+    <a href="security-plus-hub.html" class="footer-hub">&larr; Back to Hub</a>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+  // ── REVEAL TOGGLE ────────────────────────────────────────────
+  function toggleQA(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = answer.classList.contains('show');
+    answer.classList.toggle('show', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    btn.querySelector('.arrow').textContent = isOpen ? '►' : '▼';
+  }
+
+  // ── SCROLL PROGRESS ─────────────────────────────────────────
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const pct   = total > 0 ? (window.scrollY / total) * 100 : 0;
+    document.getElementById('progFill').style.width = pct + '%';
+  });
+</script>
+</body>
+</html>

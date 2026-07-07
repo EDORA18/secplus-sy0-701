@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEC+ SY0-701 | 1.3 PKI in Depth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+  <style>
+    :root {
+      --paper:     #111318;
+      --surf:      #181C22;
+      --surf2:     #1F2430;
+      --surf3:     #252C3A;
+      --rule:      #2A3040;
+      --rule2:     #364050;
+      --steel:     #5B8DB8;
+      --steel-lo:  rgba(91,141,184,0.09);
+      --steel-md:  rgba(91,141,184,0.16);
+      --steel-dim: #2B4A68;
+      --steel-hi:  #7AAEE0;
+      --alert:     #B84040;
+      --alert-lo:  rgba(184,64,64,0.09);
+      --alert-dim: #5A1818;
+      --pass:      #3E9A5A;
+      --pass-lo:   rgba(62,154,90,0.08);
+      --pass-dim:  #1A4A28;
+      --gold:      #C8A84B;
+      --gold-lo:   rgba(200,168,75,0.08);
+      --gold-dim:  #6B5820;
+      --cream:     #EDE8E0;
+      --cream-d:   #A8A098;
+      --cream-dd:  #606058;
+      --display:   'Libre Baskerville', serif;
+      --mono:      'Courier Prime', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--cream);
+      font-family: var(--display);
+      font-size: 16px;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(91,141,184,0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ── PROGRESS ────────────────────────────────────────────── */
+    .prog-rail { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--rule); z-index: 300; }
+    .prog-fill  { height: 100%; background: var(--steel); transition: width 0.2s; }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 28px 120px; }
+
+    /* ── TOP BANNER ─────────────────────────────────────────── */
+    .top-banner {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      padding: 7px 0; background: var(--steel-dim); margin: 0 -28px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel-hi);
+    }
+
+    /* ── LESSON HEADER ──────────────────────────────────────── */
+    .lesson-header { padding: 52px 0 36px; border-bottom: 1px solid var(--rule2); }
+
+    .breadcrumb {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--cream-dd); margin-bottom: 20px;
+    }
+    .breadcrumb a { color: var(--steel); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--steel-hi); }
+    .breadcrumb span { color: var(--cream-dd); }
+
+    .lesson-eyebrow {
+      font-family: var(--mono); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 10px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.1s forwards;
+    }
+
+    .lesson-title {
+      font-family: var(--display); font-size: clamp(30px, 5vw, 52px);
+      font-weight: 700; line-height: 1.05; color: var(--cream);
+      letter-spacing: -0.02em; margin-bottom: 14px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.2s forwards;
+    }
+    .lesson-title em { font-style: italic; color: var(--steel-hi); }
+
+    .lesson-sub {
+      font-family: var(--display); font-style: italic; font-size: 17px;
+      color: var(--cream-d); max-width: 680px; line-height: 1.7; margin-bottom: 24px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.25s forwards;
+    }
+
+    .badge-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      opacity: 0; animation: fadeUp 0.5s ease 0.3s forwards;
+    }
+    .badge {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 12px;
+      border: 1px solid;
+    }
+    .badge-blue   { color: var(--steel-hi);  border-color: var(--steel-dim);  background: var(--steel-lo); }
+    .badge-gold   { color: var(--gold);       border-color: var(--gold-dim);   background: var(--gold-lo); }
+    .badge-red    { color: #E07070;           border-color: var(--alert-dim);  background: var(--alert-lo); }
+    .badge-green  { color: #70C890;           border-color: var(--pass-dim);   background: var(--pass-lo); }
+
+    /* ── SECTION STRUCTURE ──────────────────────────────────── */
+    .section-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.26em; text-transform: uppercase; color: var(--steel);
+      margin: 52px 0 18px; display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--rule2); }
+
+    h2 {
+      font-family: var(--display); font-size: 22px; font-weight: 700;
+      color: var(--cream); line-height: 1.3; margin: 40px 0 14px;
+      letter-spacing: -0.01em;
+    }
+    h2 .ch-num {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      color: var(--steel-dim); letter-spacing: 0.14em; text-transform: uppercase;
+      display: block; margin-bottom: 4px;
+    }
+
+    h3 {
+      font-family: var(--display); font-size: 17px; font-weight: 700;
+      color: var(--cream-d); margin: 28px 0 10px; letter-spacing: -0.01em;
+    }
+
+    p { color: var(--cream-d); margin-bottom: 16px; font-size: 16px; }
+    p strong { color: var(--cream); font-weight: 700; }
+
+    /* ── INFO CARD ──────────────────────────────────────────── */
+    .info-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel); padding: 18px 22px; margin: 20px 0;
+    }
+    .info-card.warn  { border-left-color: var(--alert); background: var(--alert-lo); }
+    .info-card.pass  { border-left-color: var(--pass);  background: var(--pass-lo);  }
+    .info-card.gold  { border-left-color: var(--gold);  background: var(--gold-lo);  }
+
+    .info-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .info-card       .info-label { color: var(--steel); }
+    .info-card.warn  .info-label { color: #E07070; }
+    .info-card.pass  .info-label { color: #70C890; }
+    .info-card.gold  .info-label { color: var(--gold); }
+
+    .info-card p { margin-bottom: 0; }
+
+    /* ── TABLE ──────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-family: var(--display); font-size: 14px;
+    }
+    thead tr { background: var(--surf2); border-bottom: 2px solid var(--steel-dim); }
+    thead th {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--steel-hi); padding: 10px 14px; text-align: left;
+    }
+    tbody tr { border-bottom: 1px solid var(--rule); }
+    tbody tr:hover { background: var(--surf); }
+    tbody td { padding: 10px 14px; color: var(--cream-d); vertical-align: top; line-height: 1.6; }
+    tbody td strong { color: var(--cream); }
+    tbody td:first-child { color: var(--cream); font-weight: 700; white-space: nowrap; }
+
+    /* ── CODE BLOCK ─────────────────────────────────────────── */
+    .code-block {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim);
+      font-family: var(--mono); font-size: 13px; color: var(--cream-d);
+      padding: 18px 20px; margin: 20px 0; overflow-x: auto;
+      line-height: 1.7; white-space: pre;
+    }
+    .code-block .c-hl  { color: var(--steel-hi); font-weight: 700; }
+    .code-block .c-key { color: var(--gold); }
+    .code-block .c-val { color: #7EC8A0; }
+    .code-block .c-dim { color: var(--cream-dd); }
+
+    /* ── COMPARISON GRID ────────────────────────────────────── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+    .compare-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel-dim); padding: 16px 18px;
+    }
+    .compare-card.compare-alt { border-top-color: var(--gold-dim); }
+    .compare-title {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .compare-card       .compare-title { color: var(--steel-hi); }
+    .compare-card.compare-alt .compare-title { color: var(--gold); }
+    .compare-card ul { padding-left: 16px; }
+    .compare-card li  { font-size: 13px; color: var(--cream-d); line-height: 1.7; margin-bottom: 4px; }
+
+    /* ── DEFENSE LAYERS ─────────────────────────────────────── */
+    .layers { display: flex; flex-direction: column; gap: 3px; margin: 20px 0; }
+    .layer-row {
+      display: grid; grid-template-columns: 100px 1fr;
+      background: var(--surf); border: 1px solid var(--rule);
+      overflow: hidden; transition: border-color 0.15s;
+    }
+    .layer-row:hover { border-color: var(--steel-dim); }
+    .layer-num {
+      background: var(--surf2); padding: 10px 14px; text-align: center;
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--steel);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    }
+    .layer-n { font-size: 18px; color: var(--steel-hi); line-height: 1; }
+    .layer-body { padding: 10px 16px; }
+    .layer-name { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--cream); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2px; }
+    .layer-examples { font-size: 13px; color: var(--cream-dd); }
+
+    /* ── Q&A ────────────────────────────────────────────────── */
+    .qa-block { margin: 18px 0; }
+
+    .qa-question {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-left: 3px solid var(--steel-dim); padding: 16px 18px 16px 18px;
+    }
+    .qa-num {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel);
+      margin-bottom: 8px;
+    }
+    .qa-text { font-size: 15px; color: var(--cream); line-height: 1.65; }
+    .qa-scenario {
+      font-family: var(--display); font-style: italic; font-size: 14px;
+      color: var(--cream-dd); border-left: 2px solid var(--rule2);
+      padding-left: 12px; margin-bottom: 10px; line-height: 1.6;
+    }
+
+    .qa-reveal {
+      background: transparent; border: none; border-top: 1px solid var(--rule);
+      width: 100%; padding: 10px 18px; text-align: left; cursor: pointer;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--steel-dim);
+      display: flex; align-items: center; gap: 8px; transition: color 0.15s, background 0.15s;
+    }
+    .qa-reveal:hover { background: var(--steel-lo); color: var(--steel-hi); }
+    .qa-reveal .arrow { transition: transform 0.2s; font-size: 12px; }
+    .qa-reveal.open   { color: var(--steel-hi); }
+    .qa-reveal.open .arrow { transform: rotate(90deg); }
+
+    .qa-answer {
+      display: none; background: var(--surf2); border: 1px solid var(--rule2);
+      border-top: none; padding: 16px 18px;
+    }
+    .qa-answer.show { display: block; animation: fadeUp 0.25s ease forwards; }
+    .qa-answer p { font-size: 14px; margin-bottom: 10px; }
+    .qa-answer p:last-child { margin-bottom: 0; }
+    .qa-answer strong { color: var(--steel-hi); }
+    .qa-answer .answer-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--pass);
+      margin-bottom: 8px;
+    }
+
+    /* ── RESOURCES ──────────────────────────────────────────── */
+    .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 16px 0; }
+    .resource-card {
+      background: var(--surf); border: 1px solid var(--rule2); padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .resource-name { font-family: var(--display); font-size: 14px; font-weight: 700; color: var(--cream); }
+    .resource-use  { font-family: var(--display); font-style: italic; font-size: 12px; color: var(--cream-dd); }
+    .resource-tag  { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--steel); text-transform: uppercase; margin-top: 4px; }
+
+    /* ── NEXT STEPS ─────────────────────────────────────────── */
+    .next-block {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel); padding: 22px 24px; margin-top: 40px;
+    }
+    .next-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--steel); margin-bottom: 14px; }
+    .next-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .next-item  {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+      color: var(--cream-dd); line-height: 1.5;
+    }
+    .next-cmd   { color: var(--steel-hi); font-weight: 700; white-space: nowrap; }
+
+    /* ── MENU ───────────────────────────────────────────────── */
+    .cmd-menu {
+      background: var(--surf2); border: 1px solid var(--rule2);
+      padding: 16px 20px; margin-top: 20px;
+      font-family: var(--mono); font-size: 11px;
+    }
+    .cmd-menu-label { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cream-dd); margin-bottom: 10px; }
+    .cmd-row { display: flex; gap: 8px; align-items: baseline; margin: 5px 0; }
+    .cmd     { color: var(--steel-hi); font-weight: 700; min-width: 88px; }
+    .cmd-desc { color: var(--cream-dd); font-size: 10px; }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    .lesson-footer {
+      margin-top: 60px; padding: 18px 0 0; border-top: 1px solid var(--rule2);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--cream-dd); text-transform: uppercase; }
+    .footer-id span { color: var(--steel-hi); }
+    .footer-hub {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--cream-dd); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-hub:hover { color: var(--steel-hi); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 640px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .next-grid    { grid-template-columns: 1fr; }
+      .layer-row    { grid-template-columns: 70px 1fr; }
+    }
+  </style>
+  </style>
+</head>
+<body>
+
+<div class="prog-rail"><div class="prog-fill" id="progFill"></div></div>
+
+<div class="top-banner">Security+ SY0-701 &mdash; Week 1 &mdash; Domain 1.0 &mdash; Lesson 1.3</div>
+
+<div class="page">
+
+  <header class="lesson-header">
+    <div class="breadcrumb">
+      <a href="security-plus-hub.html">Security+ Hub</a>
+      <span> / Domain 1.0 / Lesson 1.3</span>
+    </div>
+    <div class="lesson-eyebrow">Chapter 1.3 &mdash; Domain 1.0: General Security Concepts</div>
+    <h1 class="lesson-title">Public Key<br><em>Infrastructure (PKI)</em></h1>
+    <p class="lesson-sub">The operational system that makes public key cryptography work at scale. Certificate anatomy, trust chain validation, revocation checking, and certificate types. Expect 4 to 6 questions on the exam.</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">Lesson 1.3</span>
+      <span class="badge badge-gold">Domain 1.0 &mdash; 12%</span>
+      <span class="badge badge-red">13 Days to Exam</span>
+      <span class="badge badge-green">Est. 90 min</span>
+    </div>
+  </header>
+
+  <div class="section-label">Overview</div>
+
+  <div class="info-card gold">
+    <div class="info-label">Why This Lesson Matters</div>
+    <p>PKI is the operational system behind every HTTPS connection, every code-signed application, every S/MIME email, and every VPN certificate. The exam tests PKI in three ways: certificate anatomy, trust chain validation, and revocation checking. Expect 4 to 6 questions across these areas.</p>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">What Carries Over From Chapter 1.2</div>
+    <p>Asymmetric encryption, digital signatures, hashing, and the four cryptographic goals. This lesson builds the trust system on top of those primitives.</p>
+  </div>
+
+  <h2><span class="ch-num">Chapter 01</span>The Trust Problem PKI Solves</h2>
+
+  <p>Asymmetric cryptography lets anyone publish a public key and receive encrypted messages or verified signatures. Nothing about the math proves the public key actually belongs to the claimed owner.</p>
+
+  <p>If an attacker publishes a public key claiming to be your bank, and you use it, the attacker decrypts everything you send. The cryptography works. The trust fails.</p>
+
+  <p>PKI solves this by introducing a trusted third party (the Certificate Authority) that vouches for the binding between an identity and a public key. That vouching takes the form of a signed digital certificate.</p>
+
+  <h2><span class="ch-num">Chapter 02</span>Certificate Anatomy (X.509 v3)</h2>
+
+  <p>Every certificate you encounter follows the X.509 v3 standard. Know these fields cold.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Field</th><th>Contents</th><th>Why It Matters</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Version</strong></td><td>X.509 v3</td><td>Current standard</td></tr>
+        <tr><td><strong>Serial Number</strong></td><td>Unique ID assigned by CA</td><td>Used in revocation lookups</td></tr>
+        <tr><td><strong>Signature Algorithm</strong></td><td>e.g., SHA-256 with RSA</td><td>Algorithm the CA used to sign this cert</td></tr>
+        <tr><td><strong>Issuer</strong></td><td>The CA that issued this certificate</td><td>Points to the next cert up the chain</td></tr>
+        <tr><td><strong>Validity Period</strong></td><td>Not Before / Not After dates</td><td>Certificate is invalid outside this window</td></tr>
+        <tr><td><strong>Subject</strong></td><td>The identity this cert represents</td><td>Common Name (CN) plus organization details</td></tr>
+        <tr><td><strong>Subject Public Key</strong></td><td>The actual public key</td><td>The whole point of the certificate</td></tr>
+        <tr><td><strong>SAN</strong></td><td>Subject Alternative Names</td><td>Required for modern browsers; CN alone is deprecated</td></tr>
+        <tr><td><strong>Key Usage</strong></td><td>Allowed operations</td><td>Digital signature, key encipherment, cert signing</td></tr>
+        <tr><td><strong>Extended Key Usage</strong></td><td>Specific purposes</td><td>Server auth, client auth, code signing, email protection</td></tr>
+        <tr><td><strong>CRL Distribution Points</strong></td><td>Where to check revocation lists</td><td>URL to fetch the CRL</td></tr>
+        <tr><td><strong>Authority Info Access</strong></td><td>OCSP responder URL</td><td>Where to check revocation in real time</td></tr>
+        <tr><td><strong>CA Signature</strong></td><td>Digital signature over all fields</td><td>Proves the CA issued this cert</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Exam Trap: CN vs. SAN</div>
+    <p>Modern browsers reject certificates that rely on Common Name alone. The Subject Alternative Name (SAN) extension is required for TLS server certificates as of Chrome 58 (2017). If a scenario describes a certificate error where the browser rejects a cert that lists the domain in CN but not in SAN, this is the cause.</p>
+  </div>
+
+  <h2><span class="ch-num">Chapter 03</span>The Certificate Authority Hierarchy</h2>
+
+  <p>CAs are organized in a tree. Trust flows from the top down.</p>
+
+  <div class="code-block"><span class="c-hl">CA Hierarchy</span>
+
+         <span class="c-val">[ Root CA ]</span>                <span class="c-dim">Self-signed, offline, trust anchor</span>
+              <span class="c-key">|</span>
+              <span class="c-key">| signs</span>
+              <span class="c-key">v</span>
+     <span class="c-val">[ Intermediate CA ]</span>            <span class="c-dim">Online, signs subscriber certs</span>
+              <span class="c-key">|</span>
+              <span class="c-key">| signs</span>
+              <span class="c-key">v</span>
+      <span class="c-val">[ Leaf Certificate ]</span>          <span class="c-dim">The cert on a web server, VPN, etc.</span>
+       <span class="c-val">Subject: yourbank.com</span></div>
+
+  <h3>Why Intermediate CAs Exist</h3>
+  <ul style="color:var(--cream-d);margin-bottom:16px;padding-left:20px;">
+    <li>The root CA is kept offline in an HSM to protect the trust anchor</li>
+    <li>If an intermediate CA is compromised, only that intermediate is revoked. The root and other intermediates continue functioning</li>
+    <li>Different intermediates can be dedicated to different purposes: TLS server auth, code signing, S/MIME</li>
+  </ul>
+
+  <div class="info-card">
+    <div class="info-label">Trust Anchor Mechanism</div>
+    <p>Your operating system and browser ship with a preloaded list of trusted root CAs (the trust store). Windows, macOS, iOS, Android, and each major browser maintain their own trust stores. When your browser validates a certificate, it walks up the chain until it reaches a root that exists in the trust store. If it does, the chain is trusted. If it does not, the connection fails.</p>
+  </div>
+
+  <h2><span class="ch-num">Chapter 04</span>Chain Validation Step by Step</h2>
+
+  <p>When you visit https://yourbank.com, your browser performs these checks in order.</p>
+
+  <div class="code-block"><span class="c-hl">Chain Validation Sequence</span>
+
+<span class="c-key">Step 1:</span>  <span class="c-val">Server presents its leaf certificate + intermediate cert(s)</span>
+<span class="c-key">Step 2:</span>  <span class="c-val">Browser extracts the leaf's Issuer field</span>
+<span class="c-key">Step 3:</span>  <span class="c-val">Browser finds the intermediate cert matching that Issuer</span>
+<span class="c-key">Step 4:</span>  <span class="c-val">Browser verifies leaf's signature using intermediate's public key</span>
+<span class="c-key">Step 5:</span>  <span class="c-val">Browser extracts the intermediate's Issuer field</span>
+<span class="c-key">Step 6:</span>  <span class="c-val">Browser looks up that Issuer in its local trust store</span>
+<span class="c-key">Step 7:</span>  <span class="c-val">If found, verifies intermediate's signature using root's public key</span>
+<span class="c-key">Step 8:</span>  <span class="c-val">Browser checks validity dates on every cert in the chain</span>
+<span class="c-key">Step 9:</span>  <span class="c-val">Browser checks revocation status on the leaf</span>
+<span class="c-key">Step 10:</span> <span class="c-val">Browser verifies Subject or SAN matches the requested hostname</span>
+<span class="c-key">Step 11:</span> <span class="c-val">If all checks pass, connection proceeds with the leaf's public key</span></div>
+
+  <div class="info-card warn">
+    <div class="info-label">Every Step Must Pass</div>
+    <p>A single failure breaks the chain. The exam tests this by describing a specific failure and asking which step caused it.</p>
+  </div>
+
+  <h3>Common Chain Failures</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Failure</th><th>Cause</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Untrusted issuer</strong></td><td>Root is not in the browser's trust store (self-signed certs fail here)</td></tr>
+        <tr><td><strong>Expired certificate</strong></td><td>Current date is outside the validity window</td></tr>
+        <tr><td><strong>Hostname mismatch</strong></td><td>Certificate is valid but does not cover the requested domain</td></tr>
+        <tr><td><strong>Missing intermediate</strong></td><td>Server did not send the intermediate cert; browser cannot build the chain</td></tr>
+        <tr><td><strong>Revoked certificate</strong></td><td>CRL or OCSP returns "revoked"</td></tr>
+        <tr><td><strong>Weak signature algorithm</strong></td><td>Cert was signed with SHA-1 or MD5; modern browsers reject</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="ch-num">Chapter 05</span>Revocation: CRL, OCSP, and OCSP Stapling</h2>
+
+  <p>Certificates have expiration dates, but a CA may need to invalidate a cert before expiration. Reasons include private key compromise, employee termination, or certificate misissuance. Three mechanisms exist.</p>
+
+  <h3>CRL (Certificate Revocation List)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Mechanism</strong></td><td>Client downloads entire signed list of revoked serial numbers</td></tr>
+        <tr><td><strong>Latency</strong></td><td>High. CRLs published hours or days after revocation</td></tr>
+        <tr><td><strong>Bandwidth</strong></td><td>High. Full CRL download can be megabytes</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>Better. Client does not tell the CA which specific cert it is checking</td></tr>
+        <tr><td><strong>Freshness</strong></td><td>Poor. Cached CRLs may be outdated</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>OCSP (Online Certificate Status Protocol)</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Mechanism</strong></td><td>Client sends serial number to OCSP responder; gets "good", "revoked", or "unknown"</td></tr>
+        <tr><td><strong>Latency</strong></td><td>Low. Real-time query</td></tr>
+        <tr><td><strong>Bandwidth</strong></td><td>Low. Single request-response per cert</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>Poor. CA learns exactly which sites you visit</td></tr>
+        <tr><td><strong>Freshness</strong></td><td>Good. Responses current at query time</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>OCSP Stapling</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Mechanism</strong></td><td>Web server queries OCSP responder itself; staples response to TLS handshake</td></tr>
+        <tr><td><strong>Latency</strong></td><td>Very low. No extra client-side query</td></tr>
+        <tr><td><strong>Bandwidth</strong></td><td>Very low. Response is part of the handshake</td></tr>
+        <tr><td><strong>Privacy</strong></td><td>Excellent. Client never contacts the CA</td></tr>
+        <tr><td><strong>Freshness</strong></td><td>Good. Server refreshes stapled response every few hours</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card">
+    <div class="info-label">Exam Rule</div>
+    <p>If a scenario emphasizes user privacy, low latency, and current revocation status simultaneously, the answer is OCSP Stapling. It is the best of all three worlds.</p>
+  </div>
+
+  <h3>Certificate Pinning</h3>
+  <p>Client hardcodes the expected certificate (or public key) for a specific server. Any certificate not matching the pin is rejected, even if the chain would otherwise validate. Used heavily in mobile apps to defeat MITM attacks that rely on rogue CAs.</p>
+
+  <div class="info-card warn">
+    <div class="info-label">Pinning Tradeoff</div>
+    <p>Pinning breaks when the legitimate certificate is rotated. Requires app updates or a pin refresh mechanism.</p>
+  </div>
+
+  <h2><span class="ch-num">Chapter 06</span>Certificate Types and Use Cases</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Purpose</th><th>Where You See It</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Domain Validation (DV)</strong></td><td>Proves control of a domain</td><td>Let's Encrypt, most standard HTTPS</td></tr>
+        <tr><td><strong>Organization Validation (OV)</strong></td><td>Verifies domain plus organization identity</td><td>Corporate websites</td></tr>
+        <tr><td><strong>Extended Validation (EV)</strong></td><td>Rigorous identity verification</td><td>Banks, financial services</td></tr>
+        <tr><td><strong>Wildcard</strong></td><td>Covers all subdomains at one level</td><td>*.example.com matches mail.example.com, api.example.com</td></tr>
+        <tr><td><strong>SAN / Multi-domain (UCC)</strong></td><td>Covers multiple explicit domains</td><td>Microsoft Exchange, Office 365</td></tr>
+        <tr><td><strong>Code Signing</strong></td><td>Signs software binaries</td><td>Windows drivers, macOS apps, iOS apps</td></tr>
+        <tr><td><strong>Client Authentication</strong></td><td>User or device authentication to server</td><td>802.1X EAP-TLS, smart cards</td></tr>
+        <tr><td><strong>S/MIME</strong></td><td>Email signing and encryption</td><td>Government and enterprise email</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Wildcard Limitations the Exam Tests</div>
+    <p><code>*.example.com</code> covers <code>mail.example.com</code> but does NOT cover <code>example.com</code> (the apex) or <code>secure.mail.example.com</code> (multi-level subdomain). The wildcard replaces exactly one label at the leftmost position.</p>
+  </div>
+
+  <h2><span class="ch-num">Chapter 07</span>Self-Signed Certificates and Private CAs</h2>
+
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-title">Self-Signed Certificate</div>
+      <ul>
+        <li>Signs itself. No CA involved</li>
+        <li>Issuer and Subject fields are identical</li>
+        <li>Trusted only if manually added to client trust store</li>
+        <li>Common for internal test environments and IoT devices</li>
+        <li>Browsers show a security warning on public web</li>
+      </ul>
+    </div>
+    <div class="compare-card compare-alt">
+      <div class="compare-title">Private (Internal) CA</div>
+      <ul>
+        <li>Organization runs its own CA hierarchy</li>
+        <li>Root pushed to every corporate device via GPO or MDM</li>
+        <li>Used for internal HTTPS, RDP, VPNs, 802.1X</li>
+        <li>Not trusted outside the organization</li>
+        <li>Scales to thousands of certs</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="info-card warn">
+    <div class="info-label">Exam Trap</div>
+    <p>A scenario describes a company that wants to issue TLS certificates to internal servers without paying a public CA. The correct answer is a private CA, not self-signed certificates. Self-signed does not scale beyond a handful of devices.</p>
+  </div>
+
+  <div class="section-label">Q &amp; A</div>
+
+  <p>Attempt every answer before revealing.</p>
+
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 01 of 04</div>
+      <p class="qa-scenario">A user visits https://internal.company.com from their corporate laptop and gets no warning. They visit the same URL from their personal laptop and get a "This connection is not secure" error. The certificate is identical in both cases.</p>
+      <p class="qa-text">Explain the technical reason.</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p>The company operates a private (internal) CA. Its root certificate is installed in the trust store of every corporate laptop via Group Policy, MDM, or equivalent tooling. When the corporate laptop validates the certificate chain, it walks up to the private root, finds it in the local trust store, and trusts the chain.</p>
+      <p>The personal laptop has no such installation. When it walks the chain, it reaches the private root and cannot find it in the trust store. Chain validation fails, and the browser displays the warning.</p>
+      <p>The certificate itself is valid. Trust is a function of the local trust store, not the certificate.</p>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 02 of 04</div>
+      <p class="qa-scenario">A large e-commerce site uses OCSP for revocation checking. Their CTO raises a privacy concern in a board meeting.</p>
+      <p class="qa-text">What is the concern, and what specific technology addresses it without abandoning real-time revocation checking?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Privacy concern:</strong> Every time a user visits the e-commerce site, the user's browser sends an OCSP query to the CA. The CA learns which certificates users are checking, the approximate time of each visit, and the user's IP address. Over time, the CA can build a profile of which sites individual users visit.</p>
+      <p><strong>Solution: OCSP Stapling.</strong> The e-commerce web server queries the OCSP responder itself, receives a signed OCSP response, and attaches it to the TLS handshake. The user's browser gets the revocation status from the server, not from the CA. The CA sees only the server's query, not individual user queries. Real-time revocation status is preserved.</p>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 03 of 04</div>
+      <p class="qa-scenario">A developer purchases a wildcard certificate for *.example.com and deploys it to mail.example.com, api.example.com, and example.com (the apex domain). Users report certificate errors when visiting example.com directly but not the subdomains.</p>
+      <p class="qa-text">Why? How do you fix it?</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p>A wildcard certificate for <code>*.example.com</code> covers exactly one label at the leftmost position. It matches <code>mail.example.com</code> and <code>api.example.com</code> because the wildcard substitutes for <code>mail</code> and <code>api</code>.</p>
+      <p>It does NOT match <code>example.com</code> (the apex domain) because there is no label to substitute for. The wildcard requires something in that leftmost position.</p>
+      <p><strong>Fix:</strong> Purchase a certificate that covers both the wildcard and the apex, or use a SAN certificate that explicitly lists <code>example.com</code> and <code>*.example.com</code> as separate entries.</p>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="qa-question">
+      <div class="qa-num">Question 04 of 04</div>
+      <p class="qa-scenario">A corporate security team discovers that a signing key for their internal code-signing certificate was exposed in a public GitHub repository 4 hours ago.</p>
+      <p class="qa-text">Walk through the immediate technical response, in order, and explain the risk if any step is delayed.</p>
+    </div>
+    <button class="qa-reveal" onclick="toggleQA(this)"><span class="arrow">&#9658;</span> Reveal Answer</button>
+    <div class="qa-answer">
+      <div class="answer-label">Answer</div>
+      <p><strong>Step 1: Revoke the certificate immediately.</strong> Submit a revocation request to the issuing CA. The CA updates the CRL and OCSP responder.</p>
+      <p><strong>Step 2: Verify OCSP responder returns "revoked".</strong> Query directly to confirm propagation.</p>
+      <p><strong>Step 3: Rotate any secrets and access tokens in the same repository.</strong> A leaked signing key rarely leaks alone.</p>
+      <p><strong>Step 4: Identify all software previously signed with the compromised key.</strong> Every artifact signed with that key is now suspect.</p>
+      <p><strong>Step 5: Reissue new signing certificates using new key material generated inside an HSM.</strong> The old key is dead; the new key must never leave secure hardware.</p>
+      <p><strong>Step 6: Re-sign trusted artifacts and publish updated versions.</strong></p>
+      <p><strong>Step 7: If applicable, add the compromised certificate to distrust lists</strong> (Windows Authenticode Distrust List, Apple's revocation mechanism). Revocation checking is not always enforced by every client. Explicit distrust ensures rejection.</p>
+      <p><strong>Risk of delay:</strong> Every hour the compromised key remains valid is another hour an attacker can sign malicious code that will pass certificate validation on unpatched systems. Once the attacker signs a malware sample, that sample retains its signature validity indefinitely on any client that does not check revocation status. Some Windows clients cache OCSP responses for hours or do not enforce revocation for code signing certificates at all, extending the attacker's window.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Additional Resources</div>
+
+  <div class="resources-grid">
+    <div class="resource-card">
+      <div class="resource-name">Professor Messer SY0-701 Domain 1.4 PKI</div>
+      <div class="resource-use">Visual walkthrough of PKI concepts. Roughly 20 minutes.</div>
+      <div class="resource-tag">Free &mdash; professormesser.com</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">Let's Encrypt: How It Works</div>
+      <div class="resource-use">Real-world example of automated DV certificate issuance.</div>
+      <div class="resource-tag">Free &mdash; letsencrypt.org</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">NIST SP 800-57 Part 1</div>
+      <div class="resource-use">Official key management guidance.</div>
+      <div class="resource-tag">Free &mdash; nist.gov</div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-name">SSL Labs Test</div>
+      <div class="resource-use">Test any TLS server; shows chain, ciphers, revocation status.</div>
+      <div class="resource-tag">Free &mdash; ssllabs.com/ssltest</div>
+    </div>
+  </div>
+
+  <div class="next-block">
+    <div class="next-label">What Comes Next</div>
+    <p style="color:var(--cream-d);font-size:14px;margin-bottom:14px;">Day 1 material is complete. Day 2 begins Domain 2.0 with threat actor taxonomy. This is the biggest single lesson of Week 1 by exam weight.</p>
+    <div class="next-grid">
+      <div class="next-item"><span class="next-cmd">/lesson</span><span>Next: Chapter 2.1 Threat Actor Taxonomy (Domain 2.0)</span></div>
+      <div class="next-item"><span class="next-cmd">/project</span><span>Build a PKI chain validator lab</span></div>
+      <div class="next-item"><span class="next-cmd">/explain</span><span>Deep dive on OCSP Stapling, chain building, or revocation</span></div>
+      <div class="next-item"><span class="next-cmd">/save</span><span>You are reading the saved version</span></div>
+    </div>
+  </div>
+
+  <div class="cmd-menu">
+    <div class="cmd-menu-label">Command Menu</div>
+    <div class="cmd-row"><span class="cmd">/learn</span><span class="cmd-desc">Topic overview and full study plan</span></div>
+    <div class="cmd-row"><span class="cmd">/lesson</span><span class="cmd-desc">Next lesson: Chapter 2.1 Threat Actor Taxonomy</span></div>
+    <div class="cmd-row"><span class="cmd">/project</span><span class="cmd-desc">Build a lab tied to this lesson</span></div>
+    <div class="cmd-row"><span class="cmd">/explain</span><span class="cmd-desc">Deep dive on any concept</span></div>
+    <div class="cmd-row"><span class="cmd">/save</span><span class="cmd-desc">Export last response as styled HTML</span></div>
+    <div class="cmd-row"><span class="cmd">/next</span><span class="cmd-desc">Continue with next logical step</span></div>
+  </div>
+
+  <footer class="lesson-footer">
+    <div class="footer-id">Security+ SY0-701 &nbsp;/&nbsp; <span>Lesson 1.3</span> &nbsp;/&nbsp; Domain 1.0 &nbsp;/&nbsp; Week 1</div>
+    <a href="security-plus-hub.html" class="footer-hub">&larr; Back to Hub</a>
+  </footer>
+
+</div>
+
+<script>
+  function toggleQA(btn) {
+    const answer = btn.nextElementSibling;
+    const isOpen = answer.classList.contains('show');
+    answer.classList.toggle('show', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    btn.querySelector('.arrow').textContent = isOpen ? '\u25BA' : '\u25BC';
+  }
+  window.addEventListener('scroll', () => {
+    const total = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = total > 0 ? (window.scrollY / total) * 100 : 0;
+    document.getElementById('progFill').style.width = pct + '%';
+  });
+</script>
+</body>
+</html>

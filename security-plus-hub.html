@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEC+ SY0-701 | COMMAND HUB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --paper:    #111318;
+      --surf:     #181C22;
+      --surf2:    #1F2430;
+      --rule:     #2A3040;
+      --rule2:    #364050;
+      --steel:     #5B8DB8;
+      --steel-lo:  rgba(91,141,184,0.09);
+      --steel-dim: #2B4A68;
+      --steel-hi:  #7AAEE0;
+      --alert:    #B84040;
+      --alert-lo: rgba(184,64,64,0.09);
+      --alert-dim:#5A1818;
+      --pass:     #3E9A5A;
+      --pass-lo:  rgba(62,154,90,0.08);
+      --pass-dim: #1A4A28;
+      --gold:     #C8A84B;
+      --gold-lo:  rgba(200,168,75,0.08);
+      --gold-dim: #6B5820;
+      --cream:    #EDE8E0;
+      --cream-d:  #A8A098;
+      --cream-dd: #606058;
+      --display:  'Libre Baskerville', serif;
+      --mono:     'Courier Prime', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--paper); color: var(--cream); font-family: var(--display); font-size: 16px; line-height: 1.75; min-height: 100vh; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: radial-gradient(circle, rgba(91,141,184,0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* ─── PROGRESS BAR ──────────────────────────────────────── */
+    .prog-rail { position: fixed; top: 0; left: 0; right: 0; height: 2px; background: var(--rule); z-index: 300; }
+    .prog-fill { height: 100%; width: 0%; background: var(--steel); transition: width 0.15s; }
+
+    /* ─── LAYOUT ────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 0 28px 100px; }
+
+    /* ─── TOP BANNER ────────────────────────────────────────── */
+    .classified-banner {
+      display: flex; align-items: center; justify-content: center; gap: 24px;
+      padding: 8px 0; background: var(--steel); margin: 0 -28px;
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.28em; text-transform: uppercase; color: var(--paper);
+      opacity: 0; animation: fadeIn 0.4s ease 0.05s forwards;
+    }
+    .classified-banner::before,
+    .classified-banner::after { content: '* * *'; letter-spacing: 0.3em; }
+
+    /* ─── HEADER ────────────────────────────────────────────── */
+    .site-header { padding: 52px 0 40px; border-bottom: 2px solid var(--steel-dim); }
+    .doc-meta {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+      color: var(--cream-dd); text-transform: uppercase; margin-bottom: 20px;
+      opacity: 0; animation: fadeIn 0.5s ease 0.15s forwards;
+    }
+    .site-title {
+      font-family: var(--display); font-size: clamp(38px, 6vw, 80px);
+      font-weight: 700; line-height: 0.92; color: var(--cream);
+      letter-spacing: -0.02em; margin-bottom: 12px;
+      opacity: 0; animation: fadeIn 0.6s ease 0.2s forwards;
+    }
+    .site-title em { font-style: italic; color: var(--steel-hi); }
+    .site-rule { height: 1px; background: var(--rule2); margin: 18px 0 16px; opacity: 0; animation: fadeIn 0.5s ease 0.3s forwards; }
+    .site-sub {
+      font-family: var(--display); font-size: 16px; font-style: italic;
+      color: var(--cream-d); max-width: 600px; line-height: 1.7;
+      opacity: 0; animation: fadeIn 0.5s ease 0.35s forwards;
+    }
+
+    /* ─── MISSION ROW ───────────────────────────────────────── */
+    .mission-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 24px;
+      margin: 32px 0 0; align-items: end;
+      opacity: 0; animation: fadeIn 0.6s ease 0.45s forwards;
+    }
+    .countdown-block {
+      background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--steel); padding: 20px 24px;
+    }
+    .cd-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--steel-dim); margin-bottom: 12px;
+    }
+    .cd-units { display: flex; }
+    .cd-unit { text-align: center; padding: 8px 16px; border-right: 1px solid var(--rule2); }
+    .cd-unit:last-child { border-right: none; }
+    .cd-num {
+      font-family: var(--mono); font-size: 32px; font-weight: 700;
+      color: var(--steel-hi); line-height: 1; display: block;
+      letter-spacing: -0.02em; text-shadow: 0 0 20px rgba(91,141,184,0.35);
+    }
+    .cd-unit-label {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--cream-dd); margin-top: 4px; display: block;
+    }
+    .cd-test-info { font-family: var(--mono); font-size: 10px; color: var(--cream-dd); letter-spacing: 0.1em; margin-top: 10px; }
+
+    .stats-block { display: flex; flex-direction: column; gap: 1px; min-width: 200px; }
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 16px; background: var(--surf); border: 1px solid var(--rule2); border-bottom: none;
+    }
+    .stat-row:first-child { border-top: 3px solid var(--steel-dim); }
+    .stat-row:last-child  { border-bottom: 1px solid var(--rule2); }
+    .stat-lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-dd); }
+    .stat-val { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--steel-hi); }
+    .stat-val.stat-live { color: var(--pass); }
+    .stat-val.stat-warn { color: #E07070; }
+
+    /* ─── DAY PROGRESS TRACK ────────────────────────────────── */
+    .day-track {
+      margin: 28px 0 0; background: var(--surf); border: 1px solid var(--rule2);
+      border-top: 3px solid var(--gold-dim); padding: 16px 20px;
+      opacity: 0; animation: fadeIn 0.6s ease 0.55s forwards;
+    }
+    .day-track-label {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .day-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+    .day-dot {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; padding: 4px 10px; border: 1px solid var(--rule2);
+      text-transform: uppercase; color: var(--cream-dd); background: var(--surf2);
+    }
+    .day-dot.done   { background: var(--pass-dim); border-color: var(--pass); color: #70C890; }
+    .day-dot.active { background: var(--steel-dim); border-color: var(--steel); color: var(--steel-hi); }
+    .day-dot.review { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+
+    /* ─── SECTION DIVIDER ───────────────────────────────────── */
+    .section-divider {
+      display: flex; align-items: center; gap: 16px; margin: 52px 0 28px;
+      opacity: 0; transform: translateY(6px); transition: opacity 0.4s, transform 0.4s;
+    }
+    .section-divider.vis { opacity: 1; transform: translateY(0); }
+    .sd-label {
+      font-family: var(--mono); font-size: 10px; font-weight: 700;
+      letter-spacing: 0.24em; text-transform: uppercase; color: var(--steel); white-space: nowrap;
+    }
+    .sd-line  { flex: 1; height: 1px; background: var(--rule2); }
+    .sd-count { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--cream-dd); white-space: nowrap; }
+    .sd-status {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 10px;
+      border: 1px solid;
+    }
+    .sd-status.done   { color: #70C890; border-color: var(--pass); background: var(--pass-lo); }
+    .sd-status.active { color: var(--steel-hi); border-color: var(--steel-dim); background: var(--steel-lo); }
+    .sd-status.locked { color: var(--cream-dd); border-color: var(--rule2); background: transparent; }
+    .sd-status.review { color: var(--gold); border-color: var(--gold-dim); background: var(--gold-lo); }
+
+    /* ─── DOMAIN GRID ───────────────────────────────────────── */
+    .domain-grid {
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: 1px; background: var(--rule2); border: 1px solid var(--rule2);
+    }
+    .domain-cell { background: var(--surf); padding: 14px 16px; text-align: center; }
+    .domain-num  { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--steel-hi); display: block; margin-bottom: 4px; }
+    .domain-name { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cream-dd); display: block; margin-bottom: 8px; line-height: 1.4; }
+    .domain-bar-wrap { height: 3px; background: var(--rule2); border-radius: 2px; overflow: hidden; }
+    .domain-bar { height: 100%; background: var(--steel); transition: width 1s ease 0.5s; }
+    .domain-pct { font-family: var(--mono); font-size: 10px; font-weight: 700; color: var(--cream-dd); display: block; margin-top: 6px; }
+
+    /* ─── GAP WARNING ───────────────────────────────────────── */
+    .gap-warning {
+      background: var(--alert-lo); border: 1px solid var(--alert-dim);
+      border-left: 4px solid var(--alert); padding: 16px 20px; margin-top: 24px;
+    }
+    .gw-label { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--alert); margin-bottom: 8px; }
+    .gw-text  { font-family: var(--display); font-size: 14px; color: var(--cream-d); line-height: 1.6; }
+
+    /* ─── CARDS ─────────────────────────────────────────────── */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+
+    .file-card {
+      background: var(--surf); border: 1px solid var(--rule2);
+      position: relative; overflow: hidden; text-decoration: none;
+      color: var(--cream); display: flex; flex-direction: column;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.4s, transform 0.4s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .file-card.vis { opacity: 1; transform: translateY(0); }
+    .file-card:hover {
+      border-color: var(--steel-dim);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--steel-dim);
+      transform: translateY(-2px) !important;
+    }
+    .file-card.card-locked {
+      opacity: 0.38 !important; pointer-events: none; cursor: default;
+    }
+    .file-card.card-locked.vis { opacity: 0.38; }
+
+    .card-strip { height: 3px; }
+    .card-strip::after {
+      content: ''; display: block; height: 4px;
+      background: repeating-linear-gradient(90deg, transparent 0, transparent 6px, var(--surf) 6px, var(--surf) 8px);
+      margin-top: 3px;
+    }
+    .card-type-tag {
+      position: absolute; top: 0; right: 0;
+      font-family: var(--mono); font-size: 8px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--paper); padding: 4px 12px;
+    }
+
+    .card-body { padding: 18px 20px; flex: 1; }
+    .card-day   { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 8px; }
+    .card-title { font-family: var(--display); font-size: 18px; font-weight: 700; line-height: 1.2; color: var(--cream); margin-bottom: 6px; letter-spacing: -0.01em; }
+    .card-subtitle { font-family: var(--display); font-style: italic; font-size: 13px; color: var(--cream-d); line-height: 1.5; margin-bottom: 12px; }
+    .card-topics { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
+    .topic-chip { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--cream-dd); background: var(--surf2); border: 1px solid var(--rule2); padding: 2px 8px; }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; border-top: 1px solid var(--rule); background: var(--surf2);
+    }
+    .card-meta  { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cream-dd); }
+    .card-arrow { font-family: var(--mono); font-size: 14px; color: var(--steel-hi); transition: transform 0.2s; }
+    .file-card:hover .card-arrow { transform: translateX(4px); }
+
+    .card-lock-tag {
+      font-family: var(--mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--cream-dd); padding: 2px 8px;
+      border: 1px solid var(--rule2); background: var(--surf2);
+    }
+
+    /* Card type color overrides */
+    .t-lesson  .card-strip, .t-lesson  .card-type-tag { background: var(--steel); }
+    .t-lesson  .card-day   { color: var(--steel-hi); }
+    .t-lesson:hover        { border-color: var(--steel) !important; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--steel) !important; }
+
+    .t-project .card-strip, .t-project .card-type-tag { background: #2E7D52; }
+    .t-project .card-day   { color: #5AB880; }
+    .t-project .card-arrow { color: #5AB880; }
+    .t-project:hover       { border-color: #2E7D52 !important; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px #2E7D52 !important; }
+
+    .t-review  .card-strip, .t-review  .card-type-tag { background: var(--gold-dim); }
+    .t-review  .card-day   { color: var(--gold); }
+    .t-review  .card-arrow { color: var(--gold); }
+    .t-review:hover        { border-color: var(--gold-dim) !important; box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--gold-dim) !important; }
+
+    /* ─── EXAM RULES ────────────────────────────────────────── */
+    .exam-rules { background: var(--surf); border: 1px solid var(--rule2); border-left: 4px solid var(--steel); padding: 20px 24px; }
+    .er-title { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--steel-hi); margin-bottom: 14px; }
+    .er-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+    .er-item { display: flex; align-items: flex-start; gap: 10px; font-family: var(--display); font-size: 14px; color: var(--cream-d); line-height: 1.5; }
+    .er-item::before { content: '--'; font-family: var(--mono); color: var(--steel-dim); flex-shrink: 0; margin-top: 1px; }
+
+    /* ─── FOOTER ────────────────────────────────────────────── */
+    .site-footer { margin-top: 60px; padding: 20px 0 0; border-top: 1px solid var(--rule2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-id { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; color: var(--cream-dd); text-transform: uppercase; }
+    .footer-id span { color: var(--steel-hi); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 680px) {
+      .mission-row      { grid-template-columns: 1fr; }
+      .domain-grid      { grid-template-columns: 1fr 1fr; }
+      .er-grid          { grid-template-columns: 1fr; }
+      .cards-grid       { grid-template-columns: 1fr; }
+      .site-title       { font-size: 38px; }
+      .day-dots         { gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="prog-rail"><div class="prog-fill" id="pbar"></div></div>
+
+<div class="classified-banner">CompTIA SY0-701 &mdash; Security+ Study Materials &mdash; 14-Day Sprint &mdash; Active</div>
+
+<div class="page">
+
+  <!-- ── HEADER ─────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="doc-meta">Document Series &mdash; Security+ SY0-701 &mdash; 14-Day Compressed Plan &mdash; Exam: July 20, 2026</div>
+    <h1 class="site-title">Security+<br><em>Command Hub</em></h1>
+    <div class="site-rule"></div>
+    <p class="site-sub">All lessons, labs, and practice materials for the CompTIA Security+ SY0-701 examination. Work in order. Do not skip domains 4 and 5.</p>
+
+    <div class="mission-row">
+      <div class="countdown-block">
+        <div class="cd-label">Time Remaining Until Exam</div>
+        <div class="cd-units">
+          <div class="cd-unit"><span class="cd-num" id="cdDays">--</span><span class="cd-unit-label">Days</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cdHours">--</span><span class="cd-unit-label">Hours</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cdMins">--</span><span class="cd-unit-label">Min</span></div>
+          <div class="cd-unit"><span class="cd-num" id="cdSecs">--</span><span class="cd-unit-label">Sec</span></div>
+        </div>
+        <div class="cd-test-info" id="examDateDisplay"></div>
+      </div>
+      <div class="stats-block" id="statsBlock"></div>
+    </div>
+
+    <!-- Day Progress Track -->
+    <div class="day-track">
+      <div class="day-track-label">14-Day Sprint Progress</div>
+      <div class="day-dots" id="dayDots"></div>
+    </div>
+  </header>
+
+  <!-- ── DOMAIN COVERAGE ────────────────────────────────────── -->
+  <div class="section-divider vis" style="margin-top:40px">
+    <div class="sd-label">Exam Domain Coverage</div>
+    <div class="sd-line"></div>
+    <div class="sd-count">5 Domains &mdash; Up to 90 Questions</div>
+  </div>
+
+  <div class="domain-grid">
+    <div class="domain-cell">
+      <span class="domain-num">12%</span>
+      <span class="domain-name">1.0 General Security Concepts</span>
+      <div class="domain-bar-wrap"><div class="domain-bar" data-w="12" style="width:0%"></div></div>
+      <span class="domain-pct">Day 1</span>
+    </div>
+    <div class="domain-cell">
+      <span class="domain-num">22%</span>
+      <span class="domain-name">2.0 Threats, Vulnerabilities, Mitigations</span>
+      <div class="domain-bar-wrap"><div class="domain-bar" data-w="22" style="width:0%"></div></div>
+      <span class="domain-pct">Days 2 &amp; 3</span>
+    </div>
+    <div class="domain-cell">
+      <span class="domain-num">18%</span>
+      <span class="domain-name">3.0 Security Architecture</span>
+      <div class="domain-bar-wrap"><div class="domain-bar" data-w="18" style="width:0%"></div></div>
+      <span class="domain-pct">Day 4</span>
+    </div>
+    <div class="domain-cell">
+      <span class="domain-num">28%</span>
+      <span class="domain-name">4.0 Security Operations</span>
+      <div class="domain-bar-wrap"><div class="domain-bar" data-w="28" style="width:0%"></div></div>
+      <span class="domain-pct">Days 5, 6 &amp; 7</span>
+    </div>
+    <div class="domain-cell">
+      <span class="domain-num">20%</span>
+      <span class="domain-name">5.0 Security Program Management</span>
+      <div class="domain-bar-wrap"><div class="domain-bar" data-w="20" style="width:0%"></div></div>
+      <span class="domain-pct">Days 8 &amp; 9</span>
+    </div>
+  </div>
+
+  <div class="gap-warning">
+    <div class="gw-label">Priority Warning</div>
+    <div class="gw-text">Domains 4.0 and 5.0 are 48% of the exam. Your current coverage of these two domains is 20-30%. Days 5 through 9 are locked to this material. Do not borrow time from them for earlier domains.</div>
+  </div>
+
+  <!-- ── LESSON CARDS ────────────────────────────────────────── -->
+  <div id="cardSections"></div>
+
+  <!-- ── EXAM DAY RULES ─────────────────────────────────────── -->
+  <div class="section-divider" id="sd-rules">
+    <div class="sd-label">Exam Day Rules</div>
+    <div class="sd-line"></div>
+  </div>
+  <div class="exam-rules">
+    <div class="er-title">Non-Negotiable Rules &mdash; Exam Day</div>
+    <div class="er-grid">
+      <div class="er-item">Up to 90 questions, 90 minutes. One minute per question maximum.</div>
+      <div class="er-item">No penalty for wrong answers. Answer every single question.</div>
+      <div class="er-item">Passing score: 750 out of 900. Scoring is scaled, not raw percentage.</div>
+      <div class="er-item">Performance-based questions appear first. Read carefully; budget time.</div>
+      <div class="er-item">Flag uncertain questions. Return after completing all others.</div>
+      <div class="er-item">Stop studying by 9 PM the night before. Sleep is not optional.</div>
+      <div class="er-item">Bring government-issued ID. Arrive 15 minutes early.</div>
+      <div class="er-item">Scenario questions: identify the domain before selecting an answer.</div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-id">Security+ SY0-701 &nbsp;/&nbsp; <span>Command Hub</span> &nbsp;/&nbsp; <span id="footerLive">0</span> Live &nbsp;/&nbsp; <span id="footerTotal">0</span> Total &nbsp;/&nbsp; <span id="footerExam">Exam date not set</span></div>
+  </footer>
+
+</div><!-- /page -->
+
+<script>
+// =============================================================
+// REGISTRY
+// type:  'lesson' | 'project' | 'review'
+// locked: true = not yet built (grayed out, not clickable)
+// status: 'done' | 'active' | 'locked' | 'review'
+//         used for section status badges and day-dot colors
+// day:   number 1-14 for the day-dot tracker
+// =============================================================
+const REGISTRY = [
+
+  // ── DAY 1: DOMAIN 1.0 ─────────────────────────────────────
+  {
+    type: 'lesson', day: 1, status: 'done',
+    file: 'security-plus-week1-lesson1-1.html',
+    week: 'Day 1 — Domain 1.0 — General Security Concepts',
+    title: '1.1 Security Controls & Frameworks',
+    subtitle: 'Control categories and types, Zero Trust principles, Defense in Depth layering.',
+    topics: ['Control Categories','Control Types','Zero Trust','Defense in Depth','Compensating Controls'],
+    meta: '~90 min — 4 Chapters — 4 Q&A',
+  },
+  {
+    type: 'lesson', day: 1, status: 'done',
+    file: 'security-plus-week1-lesson1-2.html',
+    week: 'Day 1 — Domain 1.0 — General Security Concepts',
+    title: '1.2 Cryptography Foundations',
+    subtitle: 'Symmetric vs. asymmetric, key exchange, hashing, digital signatures, use cases.',
+    topics: ['AES / 3DES / ChaCha20','RSA / ECC / DH','SHA-2 / SHA-3','Digital Signatures','Key Exchange'],
+    meta: '~90 min — 4 Chapters — 4 Q&A',
+  },
+  {
+    type: 'lesson', day: 1, status: 'done',
+    file: 'security-plus-week1-lesson1-3.html',
+    week: 'Day 1 — Domain 1.0 — General Security Concepts',
+    title: '1.3 Public Key Infrastructure',
+    subtitle: 'CA hierarchy, certificate lifecycle, CRL vs. OCSP, pinning, tokenization, obfuscation.',
+    topics: ['Root / Intermediate CA','Certificate Fields','CRL vs OCSP','OCSP Stapling','Tokenization vs Masking'],
+    meta: '~90 min — 4 Chapters — 4 Q&A',
+  },
+  {
+    type: 'project', day: 1, status: 'done',
+    file: 'security-plus-lab-domain1.html',
+    week: 'Day 1 — Domain 1.0 — General Security Concepts',
+    title: 'Domain 1.0 Mastery Lab',
+    subtitle: '30-question gated lab. 3 modules, 45-min timer. Covers all 1.x lessons. Pass threshold: 80%.',
+    topics: ['Control Classification','Crypto Scenarios','PKI Chain Diagnosis','30 Questions','45-Min Timer','Gated Reveals'],
+    meta: '45 min — 3 Modules — Gated — localStorage',
+  },
+
+  // ── DAY 2: DOMAIN 2.0 PART 1 ──────────────────────────────
+  {
+    type: 'lesson', day: 2, status: 'done',
+    file: 'security-plus-week2-lesson2-1.html',
+    week: 'Day 2 — Domain 2.0 — Threats, Vulnerabilities, Mitigations',
+    title: '2.1 Threat Actor Taxonomy',
+    subtitle: 'Nation-state, hacktivist, organized crime, insider threats, script kiddies. APT campaigns. MITRE ATT&CK. TTPs.',
+    topics: ['Nation-State / APT','Hacktivist','Organized Crime','Insider Threats','Shadow IT','MITRE ATT&CK','OSINT / ISAC'],
+    meta: '~75 min — 4 Chapters — 8 Q&A',
+  },
+  {
+    type: 'lesson', day: 2, status: 'active', locked: true,
+    file: 'security-plus-week2-lesson2-2.html',
+    week: 'Day 2 — Domain 2.0 — Threats, Vulnerabilities, Mitigations',
+    title: '2.2 Attack Surface & Social Engineering',
+    subtitle: 'Attack surface analysis, attack vectors, phishing variants, pretexting, baiting, tailgating, watering hole.',
+    topics: ['Attack Surface','Attack Vectors','Spear Phishing / Whaling','Vishing / Smishing','Pretexting','Watering Hole','Tailgating'],
+    meta: 'Next lesson',
+  },
+
+  // ── DAY 3: DOMAIN 2.0 PART 2 ──────────────────────────────
+  {
+    type: 'lesson', day: 3, status: 'locked', locked: true,
+    file: 'security-plus-week2-lesson2-3.html',
+    week: 'Day 3 — Domain 2.0 — Threats, Vulnerabilities, Mitigations',
+    title: '2.3 Malware & Application Attacks',
+    subtitle: 'Malware taxonomy, ransomware, rootkits, fileless malware, SQL injection, XSS, buffer overflow.',
+    topics: ['Ransomware / RAT','Rootkit / Bootkit','Fileless Malware','SQL Injection','XSS / CSRF','Buffer Overflow','Race Condition'],
+    meta: 'Day 3 — July 8',
+  },
+  {
+    type: 'lesson', day: 3, status: 'locked', locked: true,
+    file: 'security-plus-week2-lesson2-4.html',
+    week: 'Day 3 — Domain 2.0 — Threats, Vulnerabilities, Mitigations',
+    title: '2.4 Vulnerability Management & CVSS',
+    subtitle: 'Vulnerability lifecycle, CVSS v3.1 scoring, CVE / NVD / CWE, threat hunting, penetration testing types.',
+    topics: ['CVSS v3.1 Metrics','CVE / NVD / CWE','Scan Types','Patch Priority','Threat Hunting','Pen Test Phases','Bug Bounty'],
+    meta: 'Day 3 — July 8',
+  },
+
+  // ── DAY 4: DOMAIN 3.0 ─────────────────────────────────────
+  {
+    type: 'lesson', day: 4, status: 'locked', locked: true,
+    file: 'security-plus-week3-lesson3-1.html',
+    week: 'Day 4 — Domain 3.0 — Security Architecture',
+    title: '3.1 – 3.4 Security Architecture',
+    subtitle: 'DMZ design, cloud shared responsibility, Zero Trust architecture, TLS 1.3, PFS, HSM, TPM, secure enclave.',
+    topics: ['DMZ / Screened Subnet','Microsegmentation','Shared Responsibility','CASB / SASE','TLS 1.3 vs 1.2','PFS','HSM vs TPM','Secure Enclave'],
+    meta: 'Day 4 — July 9',
+  },
+  {
+    type: 'project', day: 4, status: 'locked', locked: true,
+    file: 'security-plus-lab-domain2-3.html',
+    week: 'Day 4 — Domain 3.0 — Security Architecture',
+    title: 'Domain 2 + 3 Mastery Lab',
+    subtitle: '30-question gated lab covering threat taxonomy, social engineering, malware, CVSS, and architecture.',
+    topics: ['30 Questions','Threat Scenarios','CVSS Scoring','Architecture Diagrams','45-Min Timer','Gated Reveals'],
+    meta: 'Day 4 — 45 min — Gated — localStorage',
+  },
+
+  // ── DAY 5: DOMAIN 4.0 PART 1 ──────────────────────────────
+  {
+    type: 'lesson', day: 5, status: 'locked', locked: true,
+    file: 'security-plus-week4-lesson4-1.html',
+    week: 'Day 5 — Domain 4.0 Part 1 — Identity & Access',
+    title: '4.1 Identity, MFA, Federation & Access Models',
+    subtitle: 'MFA types, SAML 2.0, OAuth, OIDC, PAM, JIT, access control models, Bell-LaPadula, Biba.',
+    topics: ['MFA / TOTP / HOTP','SAML 2.0','OAuth 2.0 / OIDC','PAM / JIT','MAC / DAC / RBAC / ABAC','Bell-LaPadula','Biba Model'],
+    meta: 'Day 5 — July 10',
+  },
+
+  // ── DAY 6: DOMAIN 4.0 PART 2 ──────────────────────────────
+  {
+    type: 'lesson', day: 6, status: 'locked', locked: true,
+    file: 'security-plus-week4-lesson4-2.html',
+    week: 'Day 6 — Domain 4.0 Part 2 — Endpoint & Monitoring',
+    title: '4.2 Endpoint Security, EDR/XDR, MDM, SIEM & SOAR',
+    subtitle: 'EDR vs. EPP vs. XDR, MDM/MAM, SIEM architecture, SOAR playbooks, log types, baseline anomaly detection.',
+    topics: ['EDR vs EPP vs XDR','MDM / MAM / UEM','SIEM Architecture','SOAR Playbooks','Syslog / CEF / LEEF','Baseline Anomaly','DLP Modes'],
+    meta: 'Day 6 — July 11',
+  },
+
+  // ── DAY 7: DOMAIN 4.0 PART 3 ──────────────────────────────
+  {
+    type: 'lesson', day: 7, status: 'locked', locked: true,
+    file: 'security-plus-week4-lesson4-3.html',
+    week: 'Day 7 — Domain 4.0 Part 3 — IR, Forensics & DevSecOps',
+    title: '4.3 Incident Response, Forensics & OWASP Top 10',
+    subtitle: 'PICERL lifecycle, chain of custody, order of volatility, memory forensics, OWASP Top 10, SAST vs. DAST.',
+    topics: ['PICERL','Order of Volatility','Chain of Custody','Memory Forensics','OWASP Top 10','SAST / DAST / IAST','CI/CD Security'],
+    meta: 'Day 7 — July 12',
+  },
+  {
+    type: 'project', day: 7, status: 'locked', locked: true,
+    file: 'security-plus-lab-domain4.html',
+    week: 'Day 7 — Domain 4.0 Part 3 — IR, Forensics & DevSecOps',
+    title: 'Domain 4.0 Mastery Lab',
+    subtitle: '30-question gated lab covering identity, endpoint, monitoring, IR, and forensics scenarios.',
+    topics: ['30 Questions','IAM Scenarios','IR Decision Tree','Forensics Order','OWASP Scenarios','45-Min Timer'],
+    meta: 'Day 7 — 45 min — Gated — localStorage',
+  },
+
+  // ── DAY 8: DOMAIN 5.0 PART 1 ──────────────────────────────
+  {
+    type: 'lesson', day: 8, status: 'locked', locked: true,
+    file: 'security-plus-week5-lesson5-1.html',
+    week: 'Day 8 — Domain 5.0 Part 1 — Governance & Risk',
+    title: '5.1 Governance, Policy Hierarchy & Quantitative Risk',
+    subtitle: 'Policy vs. standard vs. procedure, GRC, ALE formula, ARO, SLE, risk response strategies.',
+    topics: ['Policy Hierarchy','GRC','ALE = SLE x ARO','Risk Response','Qualitative vs Quantitative','BIA','RTO / RPO / MTTR'],
+    meta: 'Day 8 — July 13',
+  },
+
+  // ── DAY 9: DOMAIN 5.0 PART 2 ──────────────────────────────
+  {
+    type: 'lesson', day: 9, status: 'locked', locked: true,
+    file: 'security-plus-week5-lesson5-2.html',
+    week: 'Day 9 — Domain 5.0 Part 2 — Compliance & Supply Chain',
+    title: '5.2 Compliance Frameworks, Privacy & Supply Chain',
+    subtitle: 'NIST CSF, ISO 27001, PCI-DSS, HIPAA, GDPR, SOC 2, supply chain attacks, third-party risk.',
+    topics: ['NIST CSF','ISO 27001 Annex A','PCI-DSS','HIPAA Safeguards','GDPR','SOC 2 Trust Criteria','Supply Chain Risk'],
+    meta: 'Day 9 — July 14',
+  },
+  {
+    type: 'project', day: 9, status: 'locked', locked: true,
+    file: 'security-plus-lab-domain5.html',
+    week: 'Day 9 — Domain 5.0 Part 2 — Compliance & Supply Chain',
+    title: 'Domain 5.0 Mastery Lab',
+    subtitle: 'ALE/ARO/SLE calculations, compliance framework crosswalk, risk response scenarios.',
+    topics: ['ALE Calculations','Compliance Crosswalk','Risk Scenarios','30 Questions','45-Min Timer'],
+    meta: 'Day 9 — 45 min — Gated — localStorage',
+  },
+
+  // ── DAY 10: WEAK SPOT REVIEW ───────────────────────────────
+  {
+    type: 'review', day: 10, status: 'locked', locked: true,
+    file: 'security-plus-practice-50q.html',
+    week: 'Day 10 — Weak Spot Review',
+    title: '50-Question Timed Practice',
+    subtitle: 'Identify weak domains. Targeted drill on lowest-scoring areas. 50 questions, 50 minutes.',
+    topics: ['50 Questions','50-Min Timer','Domain Scoring','Weak Spot ID','Targeted Drill'],
+    meta: 'Day 10 — July 15 — Timed',
+  },
+
+  // ── DAY 11: FULL PRACTICE EXAM ────────────────────────────
+  {
+    type: 'review', day: 11, status: 'locked', locked: true,
+    file: 'security-plus-practice-90q.html',
+    week: 'Day 11 — Full Practice Exam',
+    title: '90-Question Full Practice Exam',
+    subtitle: 'Real exam conditions. 90 questions, 90 minutes. No breaks. Score target: 80%+ before sitting the exam.',
+    topics: ['90 Questions','90-Min Timer','All 5 Domains','Scaled Scoring','Performance Review'],
+    meta: 'Day 11 — July 16 — Exam Conditions',
+  },
+
+  // ── DAYS 12-14: FINAL PHASE ───────────────────────────────
+  {
+    type: 'review', day: 12, status: 'locked', locked: true,
+    file: 'security-plus-flashcard-drill.html',
+    week: 'Days 12 – 14 — Final Phase',
+    title: 'Flashcard Drill & Exam Logistics',
+    subtitle: 'Day 12: Final pass, flashcard drill only. Day 13: Rest, stop by 9 PM. Day 14: Logistics, exam at scheduled time.',
+    topics: ['Flashcard Drill','No New Material','Day 13: Rest Only','Day 14: Exam Day','July 20, 2026'],
+    meta: 'Days 12-14 — July 17-20',
+  },
+
+  // ── ADD FUTURE PAGES HERE ─────────────────────────────────
+
+];
+
+// =============================================================
+// EXAM DATE
+// =============================================================
+const EXAM_DATE    = new Date(2026, 6, 20, 9, 0, 0); // Jul 20 2026 09:00
+const EXAM_DISPLAY = 'July 20, 2026 — CompTIA Security+ SY0-701';
+
+// =============================================================
+// PLAN: July 6 = Day 1, July 7 = Day 2, etc.
+// =============================================================
+const PLAN_START = new Date(2026, 6, 6); // July 6, 2026
+
+function getCurrentPlanDay() {
+  const now = new Date();
+  const diff = Math.floor((now - PLAN_START) / 86400000);
+  return Math.min(Math.max(diff + 1, 1), 14);
+}
+
+// =============================================================
+// DAY DOTS
+// =============================================================
+function buildDayDots() {
+  const today = getCurrentPlanDay();
+  const container = document.getElementById('dayDots');
+  const dayLabels = [
+    'D1','D2','D3','D4','D5','D6','D7',
+    'D8','D9','D10','D11','D12','D13','D14'
+  ];
+  const dayDescs = [
+    'Jul 6','Jul 7','Jul 8','Jul 9','Jul 10','Jul 11','Jul 12',
+    'Jul 13','Jul 14','Jul 15','Jul 16','Jul 17','Jul 18','Jul 19-20'
+  ];
+  for (let i = 1; i <= 14; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'day-dot';
+    if (i < today)       dot.classList.add('done');
+    else if (i === today) dot.classList.add('active');
+    else if (i >= 12)    dot.classList.add('review');
+    dot.title = dayDescs[i-1];
+    dot.textContent = dayLabels[i-1];
+    container.appendChild(dot);
+  }
+}
+
+// =============================================================
+// STATS
+// =============================================================
+function buildStats() {
+  const live  = REGISTRY.filter(r => !r.locked).length;
+  const total = REGISTRY.length;
+  const today = getCurrentPlanDay();
+  const daysLeft = Math.max(0, 14 - today + 1);
+
+  const el = document.getElementById('statsBlock');
+  el.innerHTML = `
+    <div class="stat-row"><span class="stat-lbl">Files Live</span><span class="stat-val stat-live">${live} / ${total}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Plan Day</span><span class="stat-val">${today} of 14</span></div>
+    <div class="stat-row"><span class="stat-lbl">Days Left</span><span class="stat-val${daysLeft <= 3 ? ' stat-warn' : ''}">${daysLeft}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Passing Score</span><span class="stat-val">750/900</span></div>
+  `;
+  document.getElementById('footerLive').textContent  = live;
+  document.getElementById('footerTotal').textContent = total;
+  document.getElementById('footerExam').textContent  = EXAM_DISPLAY;
+}
+
+// =============================================================
+// COUNTDOWN
+// =============================================================
+function startCountdown() {
+  document.getElementById('examDateDisplay').textContent = EXAM_DISPLAY;
+  function tick() {
+    const diff = EXAM_DATE - Date.now();
+    if (diff <= 0) {
+      ['cdDays','cdHours','cdMins','cdSecs'].forEach(id => document.getElementById(id).textContent = '00');
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
+    document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
+    document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
+    const fill = Math.max(0, Math.min(100, ((14 - d) / 14) * 100));
+    document.getElementById('pbar').style.width = fill + '%';
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// =============================================================
+// CARD BUILDER
+// =============================================================
+function buildCards() {
+  const sections = {};
+  REGISTRY.forEach(item => {
+    if (!sections[item.week]) sections[item.week] = [];
+    sections[item.week].push(item);
+  });
+
+  const container = document.getElementById('cardSections');
+
+  Object.entries(sections).forEach(([weekLabel, items], sIdx) => {
+    // Determine section status from first item's status
+    const sectionStatus = items[0].status || 'locked';
+
+    const divider = document.createElement('div');
+    divider.className = 'section-divider';
+    divider.id = `sd-${sIdx}`;
+    divider.innerHTML = `
+      <div class="sd-label">${weekLabel}</div>
+      <div class="sd-line"></div>
+      <div class="sd-status ${sectionStatus}">${sectionStatus === 'done' ? 'Complete' : sectionStatus === 'active' ? 'In Progress' : sectionStatus === 'review' ? 'Review Phase' : 'Upcoming'}</div>
+    `;
+    container.appendChild(divider);
+
+    const grid = document.createElement('div');
+    grid.className = 'cards-grid';
+
+    items.forEach((item, cIdx) => {
+      const typeClass = `t-${item.type}`;
+      const typeLabel = item.type === 'project' ? 'Lab' : item.type === 'review' ? 'Review' : 'Lesson';
+      const topics    = item.topics.map(t => `<span class="topic-chip">${t}</span>`).join('');
+      const delay     = (sIdx * 0.04 + cIdx * 0.06).toFixed(2);
+      const isLocked  = !!item.locked;
+
+      const card = document.createElement(isLocked ? 'div' : 'a');
+      card.className = `file-card ${typeClass}${isLocked ? ' card-locked' : ''}`;
+      if (!isLocked) card.href = item.file;
+      card.style.transitionDelay = `${delay}s`;
+
+      card.innerHTML = `
+        <div class="card-strip"></div>
+        <div class="card-type-tag">${typeLabel}</div>
+        <div class="card-body">
+          <div class="card-day">${item.week}</div>
+          <div class="card-title">${item.title}</div>
+          <div class="card-subtitle">${item.subtitle}</div>
+          <div class="card-topics">${topics}</div>
+        </div>
+        <div class="card-footer">
+          <span class="card-meta">${item.meta}</span>
+          <span class="${isLocked ? 'card-lock-tag' : 'card-arrow'}">${isLocked ? 'Upcoming' : '&rsaquo;'}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    container.appendChild(grid);
+  });
+}
+
+// =============================================================
+// INTERSECTION OBSERVER
+// =============================================================
+function initObserver() {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.06 });
+  document.querySelectorAll('.section-divider, .file-card').forEach(el => io.observe(el));
+}
+
+// =============================================================
+// DOMAIN BAR ANIMATION
+// =============================================================
+function animateBars() {
+  setTimeout(() => {
+    document.querySelectorAll('.domain-bar').forEach(bar => {
+      bar.style.width = bar.dataset.w + '%';
+    });
+  }, 400);
+}
+
+// =============================================================
+// INIT
+// =============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  buildStats();
+  buildDayDots();
+  buildCards();
+  initObserver();
+  startCountdown();
+  animateBars();
+});
+</script>
+</body>
+</html>
